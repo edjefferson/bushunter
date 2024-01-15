@@ -6,16 +6,19 @@
   <body>
     <div id="times"></div>
     <script>
-      fetch("live_update.json").then(response => response.json()).then(data =>
-        {
-          data.filter(d => d.projected_tts >= -5 ).forEach(d => {
-            let time = document.createElement("div")
-            let date = new Date(d.timestamp)
-            time.innerHTML = "<div>" + Math.floor(d.projected_tts) + " mins</div><div>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</div>"
-            document.getElementById("times").appendChild(time)
-          })
-        }
-      )
+      setInterval(()=> {
+        fetch("live_update.json").then(response => response.json()).then(data =>
+          {
+            document.getElementById("times").innerHTML = ""
+            data.filter(d => d.projected_tts >= -5 ).forEach(d => {
+              let time = document.createElement("div")
+              let date = new Date(d.timestamp)
+              time.innerHTML = "<div>" + Math.floor(d.projected_tts) + " mins</div><div>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</div>"
+              document.getElementById("times").appendChild(time)
+            })
+          }
+        )
+      },1000)
     </script>
   </body>
 </html>
