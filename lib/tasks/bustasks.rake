@@ -7,6 +7,7 @@ require 'activerecord-import'
 
 desc "check for buses"
 task :check_bus => :environment do
+  ArrivalUpdate.where(created_at: Time.now - 6.hours..).delete_all
   app_key = ENV["TFL_APP_KEY"]
 
   line = "W19"
