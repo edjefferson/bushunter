@@ -1,0 +1,8 @@
+{
+  "cron": [
+    {
+      "command": "/bin/bash -l -c 'cd /app && RAILS_ENV=production bundle exec rake check_bus --silent",
+      "schedule": "* * * * *"
+    }
+  ]
+}
