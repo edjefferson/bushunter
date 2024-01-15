@@ -6,7 +6,7 @@
   <body>
     <div id="times"></div>
     <script>
-      setInterval(()=> {
+      const updateTimes = () => {
         fetch("live_update.json").then(response => response.json()).then(data =>
           {
             document.getElementById("times").innerHTML = ""
@@ -18,7 +18,9 @@
             })
           }
         )
-      },1000)
+      }
+      updateTimes()
+      setInterval(updateTimes,1000)
     </script>
   </body>
 </html>
