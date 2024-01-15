@@ -6,6 +6,7 @@ class ArrivalUpdate < ApplicationRecord
     url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=-1&app_key=#{app_key}"
     request = Typhoeus::Request.new(url)
     request.on_complete do |response|
+      ArrivalUpdate.where("created_at < '#{6.hours.ago}'").delete_all
       puts "#{Time.now} request complete, parsing"
       json = JSON.parse(URI.open(url).read)
       updates = json.map do |u|
@@ -34,6 +35,6 @@ class ArrivalUpdate < ApplicationRecord
       hydra = self.update_request(hydra)
     end
     hydra.run
-    ArrivalUpdate.where("created_at < '#{6.hours.ago}'").delete_all
+    
   end
 end
