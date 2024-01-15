@@ -1,7 +1,7 @@
 {
   "cron": [
     {
-      "command": "RAILS_ENV=production rake check_bus --silent",
+      "command": "rake check_bus",
       "schedule": "* * * * *"
     }
   ]
