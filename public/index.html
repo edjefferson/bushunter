@@ -19,10 +19,10 @@
         fetch(`live_update.json?stop_id=${stop_id}`).then(response => response.json()).then(data => {
           timeDiff = Date.now() - data.time_now * 1000
           stopData = data
+          setTimeout(updateData,5000)
 
 
         })
-        setTimeout(updateData,5000)
       }
       const updateDisplay = () => {
         if (stopData) {
