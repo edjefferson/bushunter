@@ -66,4 +66,3 @@ group :test do
   gem "selenium-webdriver"
 end
 gem 'activerecord-import'
-gem 'typhoeus'
