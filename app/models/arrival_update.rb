@@ -1,14 +1,16 @@
 require 'csv'
 
 class ArrivalUpdate < ApplicationRecord
-  def self.update_request(hydra)
-    app_key = ENV['TFL_APP_KEY']
-    url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=-1&app_key=#{app_key}"
-    request = Typhoeus::Request.new(url)
-    request.on_complete do |response|
+  def self.update_request(pull_count)
+    begin
       ArrivalUpdate.where("created_at < '#{6.hours.ago}'").delete_all
+      app_key = ENV['TFL_APP_KEY']
+      url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=#{pull_count}&app_key=#{app_key}"
+      filebody = URI.open(url).read
+      
       puts "#{Time.now} request complete, parsing"
-      json = JSON.parse(response.body)
+      json = JSON.parse(filebody)
+      puts json.count
       updates = json.map do |u|
         {
           stop_id: u["naptanId"],
@@ -21,20 +23,21 @@ class ArrivalUpdate < ApplicationRecord
       end
       self.import updates, on_duplicate_key_ignore: true
       puts "#{Time.now} import complete"
-      puts hydra.queued_requests.length
-      self.update_request(hydra)
+    rescue => e
+      puts e
     end
-    hydra.queue(request)
-    return hydra
   end
 
   def self.fetch_updates
-    hydra = Typhoeus::Hydra.new(max_concurrency: 1)
-
-   
-    hydra = self.update_request(hydra)
-    
-    hydra.run
-    
+    last_time = Time.now - 90
+    while true
+      if (Time.now() - last_time) > 60
+        self.update_request(-1)
+        last_time = Time.now
+      else
+        self.update_request(5)
+      end
+      
+    end
   end
 end
