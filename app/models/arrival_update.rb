@@ -3,7 +3,7 @@ require 'csv'
 class ArrivalUpdate < ApplicationRecord
   def self.update_request(pull_count)
     begin
-      ArrivalUpdate.where("created_at < '#{6.hours.ago}'").delete_all
+      
       app_key = ENV['TFL_APP_KEY']
       url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=#{pull_count}&app_key=#{app_key}"
       filebody = URI.open(url).read
@@ -21,7 +21,7 @@ class ArrivalUpdate < ApplicationRecord
           timestamp: u["timestamp"]
         }
       end
-      self.import updates, on_duplicate_key_ignore: true
+      self.import updates, on_duplicate_key_ignore: true, batch_size: 1000
       puts "#{Time.now} import complete"
     rescue => e
       puts e
@@ -32,10 +32,11 @@ class ArrivalUpdate < ApplicationRecord
     last_time = Time.now - 90
     while true
       if (Time.now() - last_time) > 60
+        ArrivalUpdate.where("created_at < '#{6.hours.ago}'").delete_all
         self.update_request(-1)
         last_time = Time.now
       else
-        self.update_request(5)
+        self.update_request(3)
       end
       
     end

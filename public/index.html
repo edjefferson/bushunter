@@ -22,6 +22,7 @@
 
 
         })
+        setTimeout(updateData,5000)
       }
       const updateDisplay = () => {
         if (stopData) {
@@ -51,7 +52,7 @@
       }
         requestAnimationFrame(updateDisplay)
         updateData()
-        setInterval(updateData,5000)
+        
       }
       
 
