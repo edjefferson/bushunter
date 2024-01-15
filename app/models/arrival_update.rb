@@ -29,7 +29,7 @@ class ArrivalUpdate < ApplicationRecord
   end
 
   def self.fetch_updates
-    hydra = Typhoeus::Hydra.new(max_concurrency: 4)
+    hydra = Typhoeus::Hydra.new(max_concurrency: 2)
 
     5.times do 
       hydra = self.update_request(hydra)
