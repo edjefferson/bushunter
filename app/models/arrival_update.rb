@@ -1,0 +1,2 @@
+class ArrivalUpdate < ApplicationRecord
+end

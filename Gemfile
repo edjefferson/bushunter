@@ -66,3 +66,4 @@ group :test do
   gem "selenium-webdriver"
 end
 gem 'whenever', require: false
+gem 'activerecord-import'

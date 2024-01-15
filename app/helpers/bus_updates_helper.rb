@@ -1,0 +1,2 @@
+module BusUpdatesHelper
+end
