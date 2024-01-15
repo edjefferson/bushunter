@@ -21,6 +21,7 @@ class BusUpdatesController < ApplicationController
       
     
     render :json => {
+      time_now: Time.now.to_i,
       stop_name: stop_name,
       buses: @data.sort_by {|d| d[:projected_tts]}
     }
