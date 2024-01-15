@@ -63,7 +63,7 @@ task :check_bus => :environment do
         end
       end
 
-      ArrivalUpdate.import updates 
+      ArrivalUpdate.import updates, on_duplicate_key_ignore: true
       if (10 - (Time.now - last_time) > 0)
         sleep 10 - (Time.now - last_time)
       end
