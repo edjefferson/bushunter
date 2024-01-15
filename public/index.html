@@ -4,16 +4,18 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div id="times"></div>
+    <div id="stop_name"></div>
+    <table id="times"></table>
     <script>
       const updateTimes = () => {
         fetch("live_update.json").then(response => response.json()).then(data =>
           {
+            document.getElementById("stop_name").innerHTML = data.stop_name
             document.getElementById("times").innerHTML = ""
-            data.filter(d => d.projected_tts >= -5 ).forEach(d => {
-              let time = document.createElement("div")
+            data.buses.filter(d => d.projected_tts >= -5 ).forEach(d => {
+              let time = document.createElement("tr")
               let date = new Date(d.timestamp)
-              time.innerHTML = "<div>"+d.line_name + "<span class='vid'>("+ d.vehicle_id +")</span></div><div>" + Math.floor(d.projected_tts) + " mins</div><div class='ls'>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</div>"
+              time.innerHTML = "<td>"+d.line_name + "<span class='vid'>("+ d.vehicle_id +")</span></td><td>" + Math.floor(d.projected_tts) + " mins</td><td class='ls'>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</td>"
               document.getElementById("times").appendChild(time)
             })
           }

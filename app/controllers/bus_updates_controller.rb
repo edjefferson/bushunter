@@ -1,6 +1,7 @@
 class BusUpdatesController < ApplicationController
   def live_update
-    @updates = ArrivalUpdate.where(stop_name: "Empress Avenue", timestamp: Time.now-30.minutes..).order(timestamp: :desc)
+    stop_name = "Empress Avenue"
+    @updates = ArrivalUpdate.where(stop_name: stop_name, timestamp: Time.now-30.minutes..).order(timestamp: :desc)
     @vehicles = @updates.map{|u|  u.vehicle_id}.uniq!
     @vehicles = [] unless @vehicles
     @data = @vehicles.map { |v|
@@ -19,6 +20,9 @@ class BusUpdatesController < ApplicationController
       }
       
     
-    render :json => @data.sort_by {|d| d[:projected_tts]}
+    render :json => {
+      stop_name: stop_name,
+      buses: @data.sort_by {|d| d[:projected_tts]}
+    }
   end
 end

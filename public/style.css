@@ -5,23 +5,30 @@ body {
 
 }
 
-#times {
+#stop_name {
   width: 100%;
+  border-bottom: 2px black solid;
+  font-size: 2em;
+}
+#times {
+  display:table;
+  table-layout: fixed;
+   width: 100%;
   font-size: 1.5em;
+  border-collapse:collapse
+
 }
 
-#times > div {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+#times > tr {
+  width: 100%;
   border-bottom: 1px black solid;
 }
 
-#times > div > div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+#times > tr > td:nth-of-type(2) {
+
+  text-align: center;
+  border-bottom: 1px black solid;
+
 }
 
 .vid, .ls {
@@ -29,5 +36,4 @@ body {
 }
 
 .vid {
-  padding-left: 1em;
 }
