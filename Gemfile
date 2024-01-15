@@ -65,5 +65,5 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
-gem 'whenever', require: false
 gem 'activerecord-import'
+gem 'typhoeus'

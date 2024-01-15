@@ -8,26 +8,29 @@
     <div id="stop_name"></div>
     <table id="times"></table>
     <script>
-      let timeDiff
+      const queryString = window.location.search;
+      const searchParams = new URLSearchParams(queryString);
+      let stop_id = searchParams.get("stop_id")
+      if (stop_id) {
+        let timeDiff
       let stopData
 
       const updateData = () => {
-        fetch("live_update.json").then(response => response.json()).then(data => {
+        fetch(`live_update.json?stop_id=${stop_id}`).then(response => response.json()).then(data => {
           timeDiff = Date.now() - data.time_now * 1000
           stopData = data
+
+
         })
       }
       const updateDisplay = () => {
-        console.log("raf")
         if (stopData) {
           document.getElementById("stop_name").innerHTML = stopData.stop_name
           document.getElementById("times").innerHTML = ""
           let cDate = Date.now()
           stopData.buses.forEach(d => {
-            console.log(d)
-            
             let time = document.createElement("tr")
-            let projectedArrival = new Date(d.projected_arrival)
+            let projectedArrival = new Date(d.expected_arrival)
             let projected_tts = Math.floor((projectedArrival - cDate)/1000)
             if (projected_tts > - 60) {
               let date = new Date(d.timestamp)
@@ -35,7 +38,7 @@
               if (projected_tts >= 0) {
                 timeString = String(Math.floor(projected_tts/60)).padStart(2, '0') + ":" + String(Math.ceil(projected_tts % 60)).padStart(2, '0') 
               } else {
-                timeString = "-" + String(Math.floor(-projected_tts/60)).padStart(2, '0') + ":" + String(ceil.floor(-projected_tts % 60)).padStart(2, '0') 
+                timeString = "-" + String(Math.floor(-projected_tts/60)).padStart(2, '0') + ":" + String(Math.ceil(-projected_tts % 60)).padStart(2, '0') 
               }
               time.innerHTML = "<td class="+ (projected_tts < 0 ? "greyed": "")+">"+d.line_name + "<span class='vid'>("+ d.vehicle_id +")</span></td><td>" + timeString + "</td><td class='ls'>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</td>"
               document.getElementById("times").appendChild(time)
@@ -46,9 +49,11 @@
         } 
         requestAnimationFrame(updateDisplay)
       }
-      requestAnimationFrame(updateDisplay)
-      updateData()
-      setInterval(updateData,5000)
+        requestAnimationFrame(updateDisplay)
+        updateData()
+        setInterval(updateData,5000)
+      }
+      
 
       
     </script>

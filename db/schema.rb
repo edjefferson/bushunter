@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_15_102812) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_15_172636) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -23,7 +23,18 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_15_102812) do
     t.datetime "timestamp", precision: nil
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "expected_arrival", precision: nil
     t.index ["timestamp", "vehicle_id", "stop_id", "line_name"], name: "idx_on_timestamp_vehicle_id_stop_id_line_name_bb8ca5b042", unique: true
+  end
+
+  create_table "stop_points", force: :cascade do |t|
+    t.text "stop_id"
+    t.text "name"
+    t.float "lat"
+    t.float "lng"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["stop_id"], name: "index_stop_points_on_stop_id", unique: true
   end
 
 end
