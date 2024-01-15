@@ -3,7 +3,6 @@ require 'csv'
 class ArrivalUpdate < ApplicationRecord
   def self.update_request(pull_count)
     begin
-      
       app_key = ENV['TFL_APP_KEY']
       url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=#{pull_count}&app_key=#{app_key}"
       filebody = URI.open(url).read

@@ -1,8 +1,0 @@
-{
-  "cron": [
-    {
-      "command": "rake check_bus",
-      "schedule": "* * * * *"
-    }
-  ]
-}
