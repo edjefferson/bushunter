@@ -14,5 +14,20 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   border-bottom: 1px black solid;
+}
+
+#times > div > div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.vid, .ls {
+  font-size: 0.7em;
+}
+
+.vid {
+  padding-left: 1em;
 }

@@ -8,7 +8,7 @@ class BusUpdatesController < ApplicationController
       if (last_update)
         projected_arrival = last_update.timestamp + last_update.time_to_station
         {
-       
+          line_name: last_update.line_name,
           timestamp: last_update.timestamp,
           time_to_station: last_update.time_to_station/60,
           projected_arrival: projected_arrival,
