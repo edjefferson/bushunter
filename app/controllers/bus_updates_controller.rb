@@ -11,9 +11,9 @@ class BusUpdatesController < ApplicationController
         {
           line_name: last_update.line_name,
           timestamp: last_update.timestamp,
-          time_to_station: last_update.time_to_station/60,
+          time_to_station: last_update.time_to_station,
           projected_arrival: projected_arrival,
-          projected_tts: (projected_arrival - Time.now)/60,
+          projected_tts: (projected_arrival - Time.now),
           vehicle_id: last_update.vehicle_id
         }
       end

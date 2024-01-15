@@ -1,5 +1,6 @@
 <html>
   <head>
+    <title>Bus Hunter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="style.css">
   </head>
@@ -15,14 +16,14 @@
             data.buses.filter(d => d.projected_tts >= -5 ).forEach(d => {
               let time = document.createElement("tr")
               let date = new Date(d.timestamp)
-              time.innerHTML = "<td>"+d.line_name + "<span class='vid'>("+ d.vehicle_id +")</span></td><td>" + Math.floor(d.projected_tts) + " mins</td><td class='ls'>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</td>"
+              time.innerHTML = "<td class="+ (d.projected_tts < 0 ? "greyed": "")+">"+d.line_name + "<span class='vid'>("+ d.vehicle_id +")</span></td><td>" + String(Math.floor(d.projected_tts/60)).padStart(2, '0') + ":" + String(Math.floor(d.projected_tts % 60)).padStart(2, '0') + "</td><td class='ls'>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</td>"
               document.getElementById("times").appendChild(time)
             })
           }
         )
       }
       updateTimes()
-      setInterval(updateTimes,1000)
+      setInterval(updateTimes,500)
     </script>
   </body>
 </html>

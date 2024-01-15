@@ -18,7 +18,9 @@ body {
   border-collapse:collapse
 
 }
-
+.greyed {
+  color: grey;
+}
 #times > tr {
   width: 100%;
   border-bottom: 1px black solid;
