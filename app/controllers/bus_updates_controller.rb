@@ -1,7 +1,16 @@
 class BusUpdatesController < ApplicationController
 
+ 
+
   def nearby_stops
-    URI.open("")
+    data = StopPoint.near([params[:lat],params[:lng]], 1, units: :km)
+    finaldata = data.map {|d| 
+      json = d.as_json
+      json[:dist] = d.distance_from([params[:lat],params[:lng]])
+      json
+    }
+    render :json => finaldata
+    
   end
 
   def live_update

@@ -1,6 +1,8 @@
 require 'open-uri'
 
 class StopPoint < ApplicationRecord
+  reverse_geocoded_by :lat, :lng
+  
 
   def self.get_stop_points
 
