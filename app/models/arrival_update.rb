@@ -8,7 +8,7 @@ class ArrivalUpdate < ApplicationRecord
     request.on_complete do |response|
       ArrivalUpdate.where("created_at < '#{6.hours.ago}'").delete_all
       puts "#{Time.now} request complete, parsing"
-      json = JSON.parse(URI.open(url).read)
+      json = JSON.parse(response.body)
       updates = json.map do |u|
         {
           stop_id: u["naptanId"],
@@ -29,11 +29,11 @@ class ArrivalUpdate < ApplicationRecord
   end
 
   def self.fetch_updates
-    hydra = Typhoeus::Hydra.new(max_concurrency: 2)
+    hydra = Typhoeus::Hydra.new(max_concurrency: 1)
 
-    5.times do 
-      hydra = self.update_request(hydra)
-    end
+   
+    hydra = self.update_request(hydra)
+    
     hydra.run
     
   end
