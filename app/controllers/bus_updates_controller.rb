@@ -15,6 +15,7 @@ class BusUpdatesController < ApplicationController
 
   def live_update
     stop_name = ""
+    stop_letter = ""
     @updates = ArrivalUpdate.where(stop_id: params[:stop_id], timestamp: (Time.now-60.minutes)..).order(timestamp: :desc)
     @vehicles = @updates.map{|u|  u.vehicle_id}.uniq!
     @vehicles = [] unless @vehicles
@@ -22,12 +23,14 @@ class BusUpdatesController < ApplicationController
       last_update = @updates.where(vehicle_id: v).where.not(expected_arrival: nil).order(timestamp: :desc)[0]
       if (last_update)
         stop_name = last_update.stop_name
+        stop_letter = last_update.platform_name
         {
           line_name: last_update.line_name,
           timestamp: last_update.timestamp,
           expected_arrival: last_update.expected_arrival,
           projected_tts: (last_update.expected_arrival - Time.now),
-          vehicle_id: last_update.vehicle_id
+          vehicle_id: last_update.vehicle_id,
+          destination_name: last_update.destination_name
         }
       end
       }
@@ -36,6 +39,7 @@ class BusUpdatesController < ApplicationController
     render :json => {
       time_now: Time.now.to_i,
       stop_name: stop_name,
+      stop_letter: stop_letter,
       buses: @data.sort_by {|d| d[:projected_tts]}
     }
   end

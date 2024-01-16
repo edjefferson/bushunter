@@ -10,6 +10,7 @@ class ArrivalUpdate < ApplicationRecord
       puts "#{Time.now} request complete, parsing"
       json = JSON.parse(filebody)
       puts json.count
+      puts json[0]
       updates = json.map do |u|
         {
           stop_id: u["naptanId"],
@@ -17,9 +18,13 @@ class ArrivalUpdate < ApplicationRecord
           vehicle_id: u["vehicleId"],
           expected_arrival: u["expectedArrival"],
           line_name: u["lineName"],
-          timestamp: u["timestamp"]
-        }
+          timestamp: u["timestamp"],
+          platform_name: u["platformName"],
+          destination_name: u["destinationName"]
+        } 
       end
+      puts updates[0]
+
       self.import updates, on_duplicate_key_ignore: true, batch_size: 1000
       puts "#{Time.now} import complete"
     rescue => e

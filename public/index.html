@@ -29,13 +29,18 @@
         }
         const updateDisplay = () => {
           if (stopData) {
-            document.getElementById("stop_name").innerHTML = stopData.stop_name
+            document.getElementById("stop_name").innerHTML = stopData.stop_name + " (" + stopData.stop_letter + ")"
             document.getElementById("times").innerHTML = ""
             let cDate = Date.now()
             stopData.buses.forEach(d => {
               let time = document.createElement("tr")
+              
+              
               let projectedArrival = new Date(d.expected_arrival)
               let projected_tts = Math.floor((projectedArrival - cDate)/1000)
+              if (projected_tts < 0) {
+                time.classList.add("greyed")
+              }
               if (projected_tts > - 60) {
                 let date = new Date(d.timestamp)
                 let timeString
@@ -44,7 +49,35 @@
                 } else {
                   timeString = "-" + String(Math.floor(-projected_tts/60)).padStart(2, '0') + ":" + String(Math.ceil(-projected_tts % 60)).padStart(2, '0') 
                 }
-                time.innerHTML = "<td class="+ (projected_tts < 0 ? "greyed": "")+">"+d.line_name + "<span class='vid'>("+ d.vehicle_id +")</span></td><td>" + timeString + "</td><td class='ls'>Last seen: " + date.toLocaleTimeString({ hour12: false })+"</td>"
+                let lineNo = document.createElement("td")
+                lineNo.innerHTML = d.line_name
+                time.appendChild(lineNo)
+
+                let info = document.createElement("td")
+
+                let dest = document.createElement("div")
+                dest.innerHTML = d.destination_name
+                info.appendChild(dest)
+
+                let vid = document.createElement("div")
+                vid.innerHTML = "("+ d.vehicle_id +")"
+                info.appendChild(vid)
+                time.appendChild(info)
+
+                let countdown = document.createElement("td")
+                countdown.innerHTML = timeString
+                time.appendChild(countdown)
+
+                let lastSeen = document.createElement("td")
+                let lastSeenDesc = document.createElement("div")
+                let lastSeenTime = document.createElement("div")
+                lastSeenDesc.innerHTML = "Last seen: " 
+                lastSeenDesc.classList.add("lsdesc")
+                lastSeenTime.innerHTML = date.toLocaleTimeString({ hour12: false })
+                lastSeen.appendChild(lastSeenDesc)
+                lastSeen.appendChild(lastSeenTime)
+                time.appendChild(lastSeen)
+
                 document.getElementById("times").appendChild(time)
               }
               

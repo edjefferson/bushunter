@@ -2,13 +2,14 @@
 
 body {
   font-family: 'Roboto', sans-serif;
-
+  margin: 0;
 }
 
 #stop_name {
   width: 100%;
   border-bottom: 2px black solid;
   font-size: 2em;
+  padding-left: 0.2em;
 }
 #times {
   display:table;
@@ -26,11 +27,43 @@ body {
   border-bottom: 1px black solid;
 }
 
+#times > tr > td:nth-of-type(1) {
+  width: 22%;
+  font-size: 1.8em;
+  text-align: left;
+  padding-left: 0.15em;
+
+}
+
 #times > tr > td:nth-of-type(2) {
+  font-size: 0.7em;
+  width: 32%;
 
   text-align: center;
-  border-bottom: 1px black solid;
 
+}
+
+#times > tr > td > div:nth-of-type(2) {
+  font-size: 0.8em;
+
+  text-align: center;
+
+}
+
+.lsdesc {
+  font-size: 0.6em;
+}
+
+#times > tr > td:nth-of-type(3) {
+  text-align: center;
+  font-size: 1.5em;
+  width: 23%;
+}
+
+#times > tr > td:nth-of-type(4) {
+  font-size: 0.8em;
+  text-align: center;
+  width: 23%;
 }
 
 .vid, .ls {
