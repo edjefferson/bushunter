@@ -6,11 +6,10 @@ class ArrivalUpdate < ApplicationRecord
       app_key = ENV['TFL_APP_KEY']
       url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=#{pull_count}&app_key=#{app_key}"
       filebody = URI.open(url).read
-      
+      Rails.logger.info "#{Time.now} request complete, parsing"
       puts "#{Time.now} request complete, parsing"
       json = JSON.parse(filebody)
-      puts json.count
-      puts json[0]
+      Rails.logger.info "#{json.count} records parse"
       updates = json.map do |u|
         {
           stop_id: u["naptanId"],
@@ -26,6 +25,7 @@ class ArrivalUpdate < ApplicationRecord
       puts updates[0]
 
       self.import updates, on_duplicate_key_ignore: true, batch_size: 5000
+      Rails.logger.info "#{Time.now} import complete"
       puts "#{Time.now} import complete"
     rescue => e
       puts e
