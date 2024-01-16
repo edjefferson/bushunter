@@ -25,7 +25,7 @@ class ArrivalUpdate < ApplicationRecord
       end
       puts updates[0]
 
-      self.import updates, on_duplicate_key_ignore: true, batch_size: 1000
+      self.import updates, on_duplicate_key_ignore: true, batch_size: 5000
       puts "#{Time.now} import complete"
     rescue => e
       puts e
