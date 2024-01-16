@@ -23,6 +23,7 @@ class StopPoint < ApplicationRecord
                 name: stat['name'],
                 lat: stat['lat'],
                 lng: stat['lon'],
+                stop_letter: stat['stopLetter']
               }
               data << stat_info unless data.include?(stat_info)
             end
