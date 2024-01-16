@@ -29,9 +29,14 @@ class ArrivalUpdate < ApplicationRecord
       if last_updates[0]
         updates = updates - last_updates
       end
+
+
       puts "#{updates.count} records after dedupe"
-      updates.uniq!
-      self.upsert_all(updates, unique_by: [:vehicle_id,:stop_id])
+      
+      updates.each_slice(5000) { |slice|
+        self.upsert_all(slice, unique_by: [:vehicle_id,:stop_id])
+      }
+     
 
       logger.info "#{Time.now} import complete"
       puts "#{Time.now} import complete"

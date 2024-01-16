@@ -17,9 +17,12 @@ class BusUpdatesController < ApplicationController
     stop_name = ""
     stop_letter = ""
     @updates = ArrivalUpdate.where(stop_id: params[:stop_id], timestamp: (Time.now-30.minutes)..).order(timestamp: :desc)
-    @vehicles = @updates.map{|u|  u.vehicle_id}.uniq!
+    puts @updates[0].inspect
+    @vehicles = @updates.map{|u|  u.vehicle_id}
+    puts @updates.map{|u|  u.vehicle_id}
     @vehicles = [] unless @vehicles
-    @data = @vehicles.map { |v|
+    @data = @vehicles.uniq.map { |v|
+      puts v
       last_update = @updates.where(vehicle_id: v).where.not(expected_arrival: nil).order(timestamp: :desc)[0]
       if (last_update)
         stop_name = last_update.stop_name
