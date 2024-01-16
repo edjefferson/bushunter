@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_16_111009) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_16_115211) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -27,6 +27,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_16_111009) do
     t.text "platform_name"
     t.text "destination_name"
     t.index ["stop_id"], name: "index_arrival_updates_on_stop_id"
+    t.index ["vehicle_id", "stop_id"], name: "index_arrival_updates_on_vehicle_id_and_stop_id", unique: true
   end
 
   create_table "stop_points", force: :cascade do |t|

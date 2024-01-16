@@ -18,25 +18,24 @@ class ArrivalUpdate < ApplicationRecord
           expected_arrival: u["expectedArrival"],
           line_name: u["lineName"],
           platform_name: u["platformName"],
-          destination_name: u["destinationName"]
+          destination_name: u["destinationName"],
+          timestamp: u["timestamp"]
         } 
       end
       puts "#{updates.count} records before dedupe"
+
+      updates.uniq! {|b| [b[:stop_id],b[:vehicle_id]]}
+      puts "#{updates.count} records before 2nd dedupe"
       if last_updates[0]
         updates = updates - last_updates
       end
       puts "#{updates.count} records after dedupe"
-      updates = updates.map { |u|
-        u[:timestamp] = Time.now
-        u
-      }
-      self.import updates, batch_size: 10000
+      updates.uniq!
+      self.upsert_all(updates, unique_by: [:vehicle_id,:stop_id])
+
       logger.info "#{Time.now} import complete"
       puts "#{Time.now} import complete"
-      detimestamped = (updates + last_updates).map {|u| 
-        u.delete(:timestamp)
-        u
-      }
+      
       return updates + last_updates
     rescue => e
       puts e
