@@ -1,5 +1,5 @@
 require 'csv'
-
+require 'time'
 class ArrivalUpdate < ApplicationRecord
   def self.update_request(pull_count,last_updates)
     begin
@@ -15,16 +15,18 @@ class ArrivalUpdate < ApplicationRecord
           stop_id: u["naptanId"],
           stop_name: u["stationName"],
           vehicle_id: u["vehicleId"],
-          expected_arrival: u["expectedArrival"],
+          expected_arrival: Time.parse(u["expectedArrival"]),
           line_name: u["lineName"],
           platform_name: u["platformName"],
           destination_name: u["destinationName"],
-          timestamp: u["timestamp"]
+          timestamp: Time.parse(u["timestamp"])
         } 
       end
       puts "#{updates.count} records before dedupe"
 
+      updates = updates.sort_by {|u| - u[:timestamp].to_i}
       updates.uniq! {|b| [b[:stop_id],b[:vehicle_id]]}
+      #puts updates[0]
       puts "#{updates.count} records before 2nd dedupe"
       if last_updates[0]
         updates = updates - last_updates
