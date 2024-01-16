@@ -17,7 +17,6 @@ class ArrivalUpdate < ApplicationRecord
           vehicle_id: u["vehicleId"],
           expected_arrival: u["expectedArrival"],
           line_name: u["lineName"],
-          timestamp: u["timestamp"],
           platform_name: u["platformName"],
           destination_name: u["destinationName"]
         } 
@@ -27,9 +26,17 @@ class ArrivalUpdate < ApplicationRecord
         updates = updates - last_updates
       end
       puts "#{updates.count} records after dedupe"
+      updates = updates.map { |u|
+        u[:timestamp] = Time.now
+        u
+      }
       self.import updates, batch_size: 10000
       logger.info "#{Time.now} import complete"
       puts "#{Time.now} import complete"
+      detimestamped = (updates + last_updates).map {|u| 
+        u.delete(:timestamp)
+        u
+      }
       return updates + last_updates
     rescue => e
       puts e
@@ -42,7 +49,7 @@ class ArrivalUpdate < ApplicationRecord
     last_updates = []
     while true
       if last_updates.count >= 250000
-        Array.shift(50000)
+        last_updates.shift(50000)
       end
       if (Time.now() - last_time) > 60
         ArrivalUpdate.where("created_at < '#{40.minutes.ago}'").delete_all
