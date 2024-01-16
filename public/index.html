@@ -5,7 +5,8 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div id="stop_name"></div>
+    <div id="stop_name">Bus Hunter</div>
+    <div id="loading">Loading...</div>
     <table id="times"></table>
     <script>
       const queryString = window.location.search;
@@ -29,8 +30,9 @@
         }
         const updateDisplay = () => {
           if (stopData) {
-            document.getElementById("stop_name").innerHTML = stopData.stop_name + " (" + stopData.stop_letter + ")"
+            document.getElementById("stop_name").innerHTML = stopData.stop_name + (stopData.stop_letter != "null" ? " (" + stopData.stop_letter + ")" : "")
             document.getElementById("times").innerHTML = ""
+            document.getElementById("loading").style.display = "none"
             let cDate = Date.now()
             stopData.buses.forEach(d => {
               let time = document.createElement("tr")
@@ -92,10 +94,12 @@
       } else {
 
         const updateNearestStops = (position) => {
+          document.getElementById("loading").style.display = "none"
+
           fetch(`nearby_stops.json?lat=${position.coords.latitude}&lng=${position.coords.longitude}`).then(response => response.json()).then(data => {
-            document.getElementById("times").innerHTML = ""
+            document.getElementById("times").innerText = ""
             data.forEach(d => {
-              document.getElementById("times").innerHTML += "<td><tr><a href='/?stop_id="+d.stop_id+"'>" + d.name + " (" +Math.round(d.dist * 100)/100+  ")</a><td/></tr>"
+              document.getElementById("times").innerHTML += "<td><tr><a href='/?stop_id="+d.stop_id+"'>" + d.name + (d.stop_letter ? " - " + d.stop_letter : "") + " (" +Math.round(d.dist * 100)/100+  "km)</a><td/></tr>"
             })
           })
         }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_16_092653) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_16_094125) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -26,6 +26,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_16_092653) do
     t.datetime "expected_arrival", precision: nil
     t.text "platform_name"
     t.text "destination_name"
+    t.index ["stop_id"], name: "index_arrival_updates_on_stop_id"
     t.index ["timestamp", "vehicle_id", "stop_id", "line_name"], name: "idx_on_timestamp_vehicle_id_stop_id_line_name_bb8ca5b042", unique: true
   end
 
