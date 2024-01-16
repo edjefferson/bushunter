@@ -1,41 +1,56 @@
 require 'csv'
 require 'time'
 class ArrivalUpdate < ApplicationRecord
+  def self.pull_json(pull_count)
+    app_key = ENV['TFL_APP_KEY']
+    url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=#{pull_count}&app_key=#{app_key}"
+    filebody = URI.open(url)
+    logger.info "#{Time.now} data pulled down"
+    puts "#{Time.now} data pulled down"
+    conn = ActiveRecord::Base.connection
+    rc = conn.raw_connection
+    rc.exec("truncate table jsontemp")
+    rc.exec("COPY jsontemp FROM STDIN")
+
+    while !filebody.eof?
+      rc.put_copy_data(filebody.readline)
+    end
+
+    rc.put_copy_end
+
+    while res = rc.get_result
+      if e_message = res.error_message
+        puts e_message
+      end
+    end
+
+    match_query = 'insert into arrival_updates (stop_id, stop_name, line_name, platform_name, destination_name, vehicle_id, expected_arrival, timestamp, created_at, updated_at)
+      select distinct q."naptanId", q."stationName", q."lineName", q."platformName", q."destinationName", q."vehicleId", max(q."expectedArrival"), max(q.timestamp), now() as created_at, now() as updated_at from
+      (select p."naptanId", p."stationName", p."lineName", p."platformName", p."destinationName", p."vehicleId",p."expectedArrival",cast(p.timestamp AS TIMESTAMP)
+      from jsontemp l
+      cross join lateral json_populate_recordset(null::update_type, doc) as p) as q
+      group by q."naptanId", q."stationName", q."lineName", q."platformName", q."destinationName", q."vehicleId"
+      on conflict (stop_id, stop_name, line_name, platform_name, destination_name, vehicle_id) do update 
+      set expected_arrival = excluded.expected_arrival, 
+      timestamp = excluded.timestamp,
+      updated_at = excluded.updated_at;'
+    result = rc.exec(match_query)
+    logger.info "#{Time.now} data in db #{result.cmd_status}"
+    puts "#{Time.now} data in db #{result.cmd_status}" 
+
+  end
+
   def self.update_request(pull_count,last_updates)
     begin
       app_key = ENV['TFL_APP_KEY']
       url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=#{pull_count}&app_key=#{app_key}"
-      filebody = URI.open(url).read
-      logger.info "#{Time.now} request complete, parsing"
-      puts "#{Time.now} request complete, parsing"
-      json = JSON.parse(filebody)
-      logger.info "#{json.count} records parse"
-      updates = json.map do |u|
-        {
-          stop_id: u["naptanId"],
-          stop_name: u["stationName"],
-          vehicle_id: u["vehicleId"],
-          expected_arrival: Time.parse(u["expectedArrival"]),
-          line_name: u["lineName"],
-          platform_name: u["platformName"],
-          destination_name: u["destinationName"],
-          timestamp: Time.parse(u["timestamp"])
-        } 
-      end
-      puts "#{updates.count} records before dedupe"
-
-      updates = updates.sort_by {|u| - u[:timestamp].to_i}
-      updates.uniq! {|b| [b[:stop_id],b[:vehicle_id]]}
-      #puts updates[0]
-      puts "#{updates.count} records before 2nd dedupe"
-      if last_updates[0]
-        updates = updates - last_updates
-      end
+      self.pull_json(pull_count)
+      
 
 
       puts "#{updates.count} records after dedupe"
       
-      updates.each_slice(5000) { |slice|
+      updates.each_slice(10000) { |slice|
         self.upsert_all(slice, unique_by: [:vehicle_id,:stop_id])
       }
      
@@ -52,17 +67,14 @@ class ArrivalUpdate < ApplicationRecord
 
   def self.fetch_updates
     last_time = Time.now - 90
-    last_updates = []
     while true
-      if last_updates.count >= 250000
-        last_updates.shift(50000)
-      end
+      
       if (Time.now() - last_time) > 60
         ArrivalUpdate.where("created_at < '#{40.minutes.ago}'").delete_all
-        last_updates = self.update_request(-1,last_updates)
+        self.pull_json(-1)
         last_time = Time.now
       else
-        last_updates = self.update_request(5,last_updates)
+        self.pull_json(5)
       end
       
     end
