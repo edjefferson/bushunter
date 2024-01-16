@@ -1,2 +1,2 @@
 web: bundle exec puma -C config/puma.rb
-worker: rake check:bus
+worker: bundle exec rake check:bus

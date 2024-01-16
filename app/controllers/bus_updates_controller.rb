@@ -16,7 +16,7 @@ class BusUpdatesController < ApplicationController
   def live_update
     stop_name = ""
     stop_letter = ""
-    @updates = ArrivalUpdate.where(stop_id: params[:stop_id], timestamp: (Time.now-60.minutes)..).order(timestamp: :desc)
+    @updates = ArrivalUpdate.where(stop_id: params[:stop_id], timestamp: (Time.now-30.minutes)..).order(timestamp: :desc)
     @vehicles = @updates.map{|u|  u.vehicle_id}.uniq!
     @vehicles = [] unless @vehicles
     @data = @vehicles.map { |v|
