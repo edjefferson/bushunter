@@ -70,15 +70,11 @@ class ArrivalUpdate < ApplicationRecord
     last_time = Time.now - 90
     while true
       
-      if (Time.now() - last_time) > 60
+      if (Time.now() - last_time) > 20
         ArrivalUpdate.where("created_at < '#{40.minutes.ago}'").delete_all
         self.pull_json(-1)
         last_time = Time.now
-      else
-        self.pull_json(5)
-        
       end
-      sleep 20
     end
   end
 end
