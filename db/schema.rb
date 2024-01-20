@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_16_212132) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_20_114005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -40,6 +40,26 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_16_212132) do
 
   create_table "customer_import", id: false, force: :cascade do |t|
     t.json "doc"
+  end
+
+  create_table "journey_pattern_timing_links", force: :cascade do |t|
+    t.text "line_id"
+    t.text "journey_pattern_id"
+    t.text "from"
+    t.text "to"
+    t.integer "run_time"
+    t.integer "run_time_to_stop"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "journeys", force: :cascade do |t|
+    t.text "line_id"
+    t.text "journey_pattern_id"
+    t.time "departure_time"
+    t.text "days_of_week"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "jsontemp", id: false, force: :cascade do |t|

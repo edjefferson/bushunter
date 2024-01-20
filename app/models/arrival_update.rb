@@ -1,6 +1,77 @@
 require 'csv'
 require 'time'
+require 'open-uri'
+
 class ArrivalUpdate < ApplicationRecord
+
+  def self.check_bus_timetable
+    Journey.delete_all
+    JourneyPatternTimingLink.delete_all
+    url = "http://localhost:3000/journey-planner-timetables.zip"
+    #url = "https://tfl.gov.uk/tfl/syndication/feeds/journey-planner-timetables.zip"
+    hash = {}
+    zip_stream = Zip::InputStream.new(URI.open(url))
+    while entry = zip_stream.get_next_entry
+        # All required operations on `entry` go here.
+      puts entry.name
+      Zip::InputStream.open(StringIO.new(entry.get_input_stream.read)) do |io|
+        while subentry = io.get_next_entry
+          xml = subentry.get_input_stream.read
+          hash = Hash.from_xml(xml)
+          #puts hash.keys
+          services = {}
+          hash['TransXChange']['Services']['Service']['Lines'].each do |k,v|
+
+            services[v["id"]] = v["LineName"]
+          end
+          journey_pattern_timing_links = hash['TransXChange']['JourneyPatternSections']['JourneyPatternSection'].map do |j|
+            total_run_time = 0
+
+            j['JourneyPatternTimingLink'].map do |link|
+  
+              service_id = j["id"].split("-")[0..4].join("-")
+              service_id = service_id.split("_")[1..-1].join("_")
+              run_time = ISO8601::Duration.new(link["RunTime"]).to_seconds.to_i
+              old_total_run_time = total_run_time.dup
+              total_run_time += run_time
+
+              {
+                line_id: services[service_id],
+                journey_pattern_id: link["id"].split("-")[0..-2].join("-").split("_")[1..-1].join("_"),
+                from: link["From"]["StopPointRef"],
+                to: link["To"]["StopPointRef"],
+                run_time: run_time,
+                run_time_to_stop: old_total_run_time
+              }
+            end
+          end
+          JourneyPatternTimingLink.insert_all(journey_pattern_timing_links.flatten)
+          
+          journeys = hash['TransXChange']['VehicleJourneys']['VehicleJourney'].map do |j|
+
+            days_of_week = j["OperatingProfile"]["RegularDayType"]["DaysOfWeek"].keys[0]
+            service_id = j["JourneyPatternRef"].split("-")[0..4].join("-")
+            service_id = service_id.split("_")[1..-1].join("_")
+
+              {
+                line_id: services[service_id],
+
+                journey_pattern_id: j["JourneyPatternRef"].split("_")[1..-1].join("_"),
+                departure_time: j["DepartureTime"],
+                days_of_week: days_of_week
+              }
+          end
+          Journey.insert_all(journeys)
+
+          
+        end
+      end
+
+      break
+    end
+    return hash
+  end
+
   def self.pull_json(pull_count)
     app_key = ENV['TFL_APP_KEY']
     url = "https://api.tfl.gov.uk/Mode/bus/Arrivals?count=#{pull_count}&app_key=#{app_key}"
@@ -69,24 +140,31 @@ class ArrivalUpdate < ApplicationRecord
   def self.fetch_updates
     last_time = Time.now - 90
     last_full_check = Time.now - 90
-    last_delete = Time.now - 605
+    last_delete = Time.now - 305
+    continue = true
+    while continue
+      begin
+        if (Time.now - last_delete) > 300
+          ArrivalUpdate.where("created_at < '#{40.minutes.ago}'").delete_all
+          last_delete = Time.now
+        end
 
-    while true
-
-      if (Time.now - last_delete) > 600
-        ArrivalUpdate.where("created_at < '#{40.minutes.ago}'").delete_all
-      end
-
-      if (Time.now - last_full_check) > 60
-        self.pull_json(-1)
-        last_time = Time.now
-        last_full_check = Time.now
-      elsif (Time.now - last_time) > 10
-        self.pull_json(5)
-        last_time = Time.now
+        if (Time.now - last_full_check) > 60
+          last_time = Time.now
+          last_full_check = Time.now
+          self.pull_json(-1)
+        elsif (Time.now - last_time) > 10
+          last_time = Time.now
+          self.pull_json(5)
+        end
+      rescue => e
+        contine = false
+        logger.info "#{e}"
+        puts "#{e}"
       end
 
       
     end
   end
 end
+

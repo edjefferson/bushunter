@@ -65,5 +65,6 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
-gem 'activerecord-import'
+gem 'rubyzip', require: 'zip'
 gem 'geocoder'
+gem 'iso8601'

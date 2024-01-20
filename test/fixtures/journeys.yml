@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  journey_pattern_id: MyText
+  departure_time: 2024-01-20 11:40:05
+  days_of_week: MyText
+
+two:
+  journey_pattern_id: MyText
+  departure_time: 2024-01-20 11:40:05
+  days_of_week: MyText
