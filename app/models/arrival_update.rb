@@ -10,66 +10,81 @@ class ArrivalUpdate < ApplicationRecord
     url = "http://localhost:3000/journey-planner-timetables.zip"
     #url = "https://tfl.gov.uk/tfl/syndication/feeds/journey-planner-timetables.zip"
     hash = {}
-    zip_stream = Zip::InputStream.new(URI.open(url))
-    while entry = zip_stream.get_next_entry
-        # All required operations on `entry` go here.
-      puts entry.name
-      Zip::InputStream.open(StringIO.new(entry.get_input_stream.read)) do |io|
-        while subentry = io.get_next_entry
-          xml = subentry.get_input_stream.read
-          hash = Hash.from_xml(xml)
-          #puts hash.keys
-          services = {}
-          hash['TransXChange']['Services']['Service']['Lines'].each do |k,v|
-
-            services[v["id"]] = v["LineName"]
-          end
-          journey_pattern_timing_links = hash['TransXChange']['JourneyPatternSections']['JourneyPatternSection'].map do |j|
-            total_run_time = 0
-
-            j['JourneyPatternTimingLink'].map do |link|
-  
-              service_id = j["id"].split("-")[0..4].join("-")
-              service_id = service_id.split("_")[1..-1].join("_")
-              run_time = ISO8601::Duration.new(link["RunTime"]).to_seconds.to_i
-              old_total_run_time = total_run_time.dup
-              total_run_time += run_time
-
-              {
-                line_id: services[service_id],
-                journey_pattern_id: link["id"].split("-")[0..-2].join("-").split("_")[1..-1].join("_"),
-                from: link["From"]["StopPointRef"],
-                to: link["To"]["StopPointRef"],
-                run_time: run_time,
-                run_time_to_stop: old_total_run_time
-              }
-            end
-          end
-          JourneyPatternTimingLink.insert_all(journey_pattern_timing_links.flatten)
+    zip_data = []
+    unzip_data = []
+    Zip::File.open_buffer(URI.open(url)) do |zip|
+      zip.each do |entry|
+          # All required operations on `entry` go here.
+        puts entry.name
+       
+        zip_data << entry.get_input_stream.read
+      end
+    end
+    puts "egg"
+    zip_data.each do |z|
+      Zip::File.open_buffer(z) do |zip|
+        zip.each do |entry|
           
-          journeys = hash['TransXChange']['VehicleJourneys']['VehicleJourney'].map do |j|
+            puts entry.name
+          
+            unzip_data << entry.get_input_stream.read
+          
+        end
+      end
+    end
+    unzip_data.each do |z|
+      xml = z
+      doc = Nokogiri::XML(xml)
+      
+      services = {}
 
-            days_of_week = j["OperatingProfile"]["RegularDayType"]["DaysOfWeek"].keys[0]
-            service_id = j["JourneyPatternRef"].split("-")[0..4].join("-")
-            service_id = service_id.split("_")[1..-1].join("_")
+      doc.css('TransXChange/Services/Service/Lines/Line').each do |line|
+        services[line.attr("id").to_s] = line.css("LineName").inner_text
+      end
 
-              {
-                line_id: services[service_id],
+  
+      journey_pattern_timing_links = doc.css('TransXChange/JourneyPatternSections/JourneyPatternSection').map do |j|
+        total_run_time = 0
 
-                journey_pattern_id: j["JourneyPatternRef"].split("_")[1..-1].join("_"),
-                departure_time: j["DepartureTime"],
-                days_of_week: days_of_week
-              }
-          end
-          Journey.insert_all(journeys)
+        j.css('JourneyPatternTimingLink').map do |link|
+
+          service_id = j.attr("id").split("-")[0..4].join("-")
+          service_id = service_id.split("_")[1..-1].join("_")
+          run_time = ISO8601::Duration.new(link.css("RunTime").inner_text).to_seconds.to_i
+          old_total_run_time = total_run_time.dup
+          total_run_time += run_time
+
+          {
+            line_id: services[service_id],
+            journey_pattern_id: link.attr('id').split("-")[0..-2].join("-").split("_")[1..-1].join("_"),
+            from: link.css("From/StopPointRef").inner_text,
+            to: link.css("To/StopPointRef").inner_text,
+            run_time: run_time,
+            run_time_to_stop: old_total_run_time
+          }
 
           
         end
       end
+      JourneyPatternTimingLink.insert_all(journey_pattern_timing_links.flatten)
+      
+      journeys = doc.css('TransXChange/VehicleJourneys/VehicleJourney').map do |j|
+        days_of_week = j.css('OperatingProfile/RegularDayType/DaysOfWeek').children.map {|n| n.name}[0]
+        service_id = j.css("JourneyPatternRef").inner_text.split("-")[0..4].join("-")
+        service_id = service_id.split("_")[1..-1].join("_")
 
-      break
+          {
+            line_id: services[service_id],
+
+            journey_pattern_id: j.css("JourneyPatternRef").inner_text.split("_")[1..-1].join("_"),
+            departure_time: j.css("DepartureTime").inner_text,
+            days_of_week: days_of_week
+          }
+      end
+      Journey.insert_all(journeys)
+
+      
     end
-    return hash
   end
 
   def self.pull_json(pull_count)
