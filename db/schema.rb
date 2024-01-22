@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_20_114005) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_22_103049) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -42,13 +42,42 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_20_114005) do
     t.json "doc"
   end
 
+  create_table "journey_pattern_section_maps", force: :cascade do |t|
+    t.text "journey_pattern_ref"
+    t.bigint "journey_pattern_id"
+    t.text "journey_pattern_section_ref"
+    t.bigint "journey_pattern_section_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["journey_pattern_id"], name: "index_journey_pattern_section_maps_on_journey_pattern_id"
+    t.index ["journey_pattern_ref", "journey_pattern_section_ref"], name: "idx_on_journey_pattern_ref_journey_pattern_section__f02c42769a", unique: true
+    t.index ["journey_pattern_section_id"], name: "idx_on_journey_pattern_section_id_4cd47a0e6a"
+  end
+
+  create_table "journey_pattern_sections", force: :cascade do |t|
+    t.text "journey_pattern_section_ref"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "journey_pattern_timing_links", force: :cascade do |t|
     t.text "line_id"
-    t.text "journey_pattern_id"
-    t.text "from"
-    t.text "to"
-    t.integer "run_time"
+    t.text "from_stop"
+    t.text "to_stop"
     t.integer "run_time_to_stop"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.interval "wait_time"
+    t.interval "run_time"
+    t.bigint "journey_pattern_section_id"
+    t.text "journey_pattern_timing_link_ref"
+    t.interval "total_time_since_start"
+    t.index ["journey_pattern_section_id"], name: "idx_on_journey_pattern_section_id_42f28e5879"
+    t.index ["journey_pattern_timing_link_ref"], name: "idx_on_journey_pattern_timing_link_ref_603a24e2bb", unique: true
+  end
+
+  create_table "journey_patterns", force: :cascade do |t|
+    t.text "journey_pattern_ref"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -87,4 +116,21 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_20_114005) do
     t.json "j"
   end
 
+  create_table "vehicle_journeys", force: :cascade do |t|
+    t.text "line_name"
+    t.text "journey_pattern_ref"
+    t.text "days_of_week"
+    t.time "departure_time"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "vehicle_journey_code"
+    t.index ["vehicle_journey_code"], name: "index_vehicle_journeys_on_vehicle_journey_code", unique: true
+  end
+
+  create_table "xmltemp", id: false, force: :cascade do |t|
+    t.xml "doc"
+  end
+
+  add_foreign_key "journey_pattern_section_maps", "journey_pattern_sections"
+  add_foreign_key "journey_pattern_section_maps", "journey_patterns"
 end

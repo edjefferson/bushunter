@@ -3,15 +3,141 @@ require 'time'
 require 'open-uri'
 
 class ArrivalUpdate < ApplicationRecord
+  def self.get_vehicle_journeys
+    conn = ActiveRecord::Base.connection
+    rc = conn.raw_connection
+    match_query = "
+    insert into vehicle_journeys (line_name, vehicle_journey_code, journey_pattern_ref, days_of_week, departure_time, created_at, updated_at) 
+
+    select line_name, vehicle_journey_code, journey_pattern_ref, split_part(SUBSTRING(days_of_week::text, 2, length(days_of_week::text)),' xml',1) as days_of_week,TO_TIMESTAMP(departure_time::text, 'HH24:MI:SS'), NOW(), NOW() from
+    (select
+    line_name, unnest((xpath(\'//t:JourneyPatternRef/text()\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as journey_pattern_ref,
+    unnest((xpath(\'//t:RegularDayType/t:DaysOfWeek/*\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as days_of_week,
+    unnest((xpath(\'//t:DepartureTime/text()\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as departure_time
+    unnest((xpath(\'//t:VehicleJourneyCode/*\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as vehicle_journey_code,
+    from
+    (select line_name, unnest(xpath(\'//t:VehicleJourney\', timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))  as vehicle_journey
+    from
+    (select timetable, unnest(xpath(\'//t:LineName/text()\' , timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as line_name
+    from 
+    (select unnest(xpath(\'//t:TransXChange\' , doc, array[array[\'t\',\'http://www.transxchange.org.uk/\']]) ) as timetable   from xmltemp) as timetables) as timetables2) as journeydata) as final_data on conflict (vehicle_journey_code) do nothing"
+
+    result = rc.exec(match_query)
+    puts result.inspect
+  end
+
+  def self.runquery
+    puts "dot"
+    conn = ActiveRecord::Base.connection
+    rc = conn.raw_connection
+    #
+    
+    puts "eggy"
+
+
+    match_query = """select (xpath(\'//t:JourneyPatternTimingLink/t:From/t:StopPointRef/text()\' , jps, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))[1]::text as from,
+    (xpath(\'//t:JourneyPatternTimingLink/t:To/t:StopPointRef/text()\' , jps, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))[1]::text as to,
+    (xpath(\'//t:JourneyPatternTimingLink/t:RunTime/text()\' , jps, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))[1]::text as run_time,
+    (xpath(\'//t:JourneyPatternTimingLink/t:WaitTime/text()\' , jps, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))[1]::text as wait_time,
+    id as jps_id,
+    line_name as line_name
+    
+    from (select line_name, unnest(xpath(\'//t:JourneyPatternSection\', tt, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))  as jps,
+    unnest(xpath(\'//t:JourneyPatternSection/@id\' , tt, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as id
+    from (select timetable as tt, unnest(xpath(\'//t:LineName/text()\' , timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as line_name from (select unnest(xpath(\'//t:TransXChange\' , doc, array[array[\'t\',\'http://www.transxchange.org.uk/\']]) ) as timetable   from xmltemp ) as timetables) as timetables2) as jpslist limit 10"""
+    
+    match_query = "
+  insert into journey_pattern_sections (journey_pattern_section_ref,journey_pattern_id, created_at,updated_at)
+    select unnest(xpath(\'//t:JourneyPatternSectionRefs/text()\', journey_patterns, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as journey_pattern_section_ref, 
+    
+    unnest(xpath(\'//@id\', journey_patterns, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as journey_pattern_id, NOW(), NOW()
+    from
+    (select
+    unnest(xpath(\'//t:JourneyPattern\', service, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as journey_patterns from
+    (select line_name, unnest(xpath(\'//t:Service\', timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))  as service
+    from
+    (select timetable, unnest(xpath(\'//t:LineName/text()\' , timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as line_name
+    from 
+    (select unnest(xpath(\'//t:TransXChange\' , doc, array[array[\'t\',\'http://www.transxchange.org.uk/\']]) ) as timetable   from xmltemp) as timetables) as timetables2) as servicedata) as journeypatternsdata"
+    result = rc.exec(match_query)
+    #puts result.inspect
+    
+    result.each do |r|
+      puts r
+      
+    end
+  end
+
+  def self.loadXmlToDb(z,xmltemp)
+    puts "opening"
+    #puts #
+    doc = Nokogiri::XML(z)
+    start_date = doc.css('TransXChange/Services/Service/OperatingPeriod/StartDate').inner_text
+    end_date = doc.css('TransXChange/Services/Service/OperatingPeriod/EndDate').inner_text
+    if Date.today >= Date.parse(start_date) && Date.today <= Date.parse(end_date)
+      xmltemp << {doc: z}
+      if xmltemp.count > 10
+        puts "db dumping"
+        Xmltemp.insert_all(xmltemp)
+        
+        xmltemp = []
+      end
+      
+    end
+    xmltemp
+  end
+  def self.process_zip(zip_data,xmltemp)
+      Zip::File.open_buffer(zip_data) do |zip|
+        zip.each do |entry|
+          
+          puts entry.name
+          
+          xmltemp = loadXmlToDb(entry.get_input_stream.read,xmltemp)
+        end
+      end
+    
+  end
+  def self.load_timetable
+
+    url = "http://localhost:3000/journey-planner-timetables.zip"
+    #url = "https://tfl.gov.uk/tfl/syndication/feeds/journey-planner-timetables.zip"
+    hash = {}
+    zip_data = []
+    unzip_data = {}
+    xmltemp = []
+    Xmltemp.delete_all
+
+    Zip::File.open_buffer(URI.open(url)) do |zip|
+      zip.each do |entry|
+          # All required operations on `entry` go here.
+        puts entry.name
+        process_zip(entry.get_input_stream.read,xmltemp)
+      end
+    end
+    puts "egg"
+    Xmltemp.insert_all(xmltemp)
+
+    
+
+    #filebody = URI.open(url)
+    #filebody = File.open("test.xml")
+    #logger.info "#{Time.now} data pulled down"
+    puts "#{Time.now} data pulled down"
+    
+    logger.info "#{Time.now} data in db #{result.cmd_status}"
+    puts "#{Time.now} data in db #{result.cmd_status}" 
+  end
 
   def self.check_bus_timetable
+    jptl = 0
+    jc = 0
     Journey.delete_all
     JourneyPatternTimingLink.delete_all
     url = "http://localhost:3000/journey-planner-timetables.zip"
     #url = "https://tfl.gov.uk/tfl/syndication/feeds/journey-planner-timetables.zip"
     hash = {}
     zip_data = []
-    unzip_data = []
+    unzip_data = {}
     Zip::File.open_buffer(URI.open(url)) do |zip|
       zip.each do |entry|
           # All required operations on `entry` go here.
@@ -27,12 +153,13 @@ class ArrivalUpdate < ApplicationRecord
           
             puts entry.name
           
-            unzip_data << entry.get_input_stream.read
-          
+            unzip_data[entry.name] = entry.get_input_stream.read
+            break
         end
       end
     end
-    unzip_data.each do |z|
+    unzip_data.sort_by{|k,v| k}.to_h.each do |k,z|
+      puts k
       xml = z
       doc = Nokogiri::XML(xml)
       
@@ -42,48 +169,74 @@ class ArrivalUpdate < ApplicationRecord
         services[line.attr("id").to_s] = line.css("LineName").inner_text
       end
 
-  
-      journey_pattern_timing_links = doc.css('TransXChange/JourneyPatternSections/JourneyPatternSection').map do |j|
-        total_run_time = 0
+      start_date = doc.css('TransXChange/Services/Service/OperatingPeriod/StartDate').inner_text
+      end_date = doc.css('TransXChange/Services/Service/OperatingPeriod/EndDate').inner_text
+      if Time.now >= Time.parse(start_date) && Time.now <= Time.parse(end_date)
 
-        j.css('JourneyPatternTimingLink').map do |link|
-
-          service_id = j.attr("id").split("-")[0..4].join("-")
+        journeys = doc.css('TransXChange/VehicleJourneys/VehicleJourney').map do |j|
+          days_of_week = j.css('OperatingProfile/RegularDayType/DaysOfWeek').inner_html.strip
+          days_of_week = days_of_week ? days_of_week.split(">")[0].to_s[1..-1]: nil
+      
+          
+          
+          service_id = j.css("JourneyPatternRef").inner_text.split("-")[0..4].join("-")
           service_id = service_id.split("_")[1..-1].join("_")
-          run_time = ISO8601::Duration.new(link.css("RunTime").inner_text).to_seconds.to_i
-          old_total_run_time = total_run_time.dup
-          total_run_time += run_time
+     
+          if days_of_week == "Sunday"
+            {
+              line_id: services[service_id],
+              journey_pattern_id: j.css("JourneyPatternRef").inner_text.split("_")[1..-1].join("_"),
+              departure_time: j.css("DepartureTime").inner_text,
+              days_of_week: days_of_week
+            }
+          else
+            nil
+          end
+        end
+        puts jc
+        puts journeys.count
+        journeys.compact!
+        puts journeys.count
+        jids = journeys.map {|j| j[:journey_pattern_id]}
+        #Journey.insert_all(journeys)
+        jc += journeys.count
 
-          {
-            line_id: services[service_id],
-            journey_pattern_id: link.attr('id').split("-")[0..-2].join("-").split("_")[1..-1].join("_"),
-            from: link.css("From/StopPointRef").inner_text,
-            to: link.css("To/StopPointRef").inner_text,
-            run_time: run_time,
-            run_time_to_stop: old_total_run_time
-          }
+        journey_pattern_timing_links = doc.css('TransXChange/JourneyPatternSections/JourneyPatternSection').map do |j|
+          total_run_time = 0
 
+          j.css('JourneyPatternTimingLink').map do |link|
+
+            service_id = j.attr("id").split("-")[0..4].join("-")
+            service_id = service_id.split("_")[1..-1].join("_")
+            run_time = ISO8601::Duration.new(link.css("RunTime").inner_text).to_seconds.to_i
+            old_total_run_time = total_run_time.dup
+            total_run_time += run_time
+            jpid = link.attr('id').split("-")[0..-2].join("-").split("_")[1..-1].join("_")
+            if jids.include?(jpid)
+              {
+                line_id: services[service_id],
+                journey_pattern_id: jpid,
+                from: link.css("From/StopPointRef").inner_text,
+                to: link.css("To/StopPointRef").inner_text,
+                run_time: run_time,
+                run_time_to_stop: old_total_run_time
+              }
+            else
+              nil
+            end
+
+            
+          end
           
         end
+        journey_pattern_timing_links.compact!
+        jptl += journey_pattern_timing_links.flatten.length
+        #JourneyPatternTimingLink.insert_all(journey_pattern_timing_links.flatten)
+       
       end
-      JourneyPatternTimingLink.insert_all(journey_pattern_timing_links.flatten)
-      
-      journeys = doc.css('TransXChange/VehicleJourneys/VehicleJourney').map do |j|
-        days_of_week = j.css('OperatingProfile/RegularDayType/DaysOfWeek').children.map {|n| n.name}[0]
-        service_id = j.css("JourneyPatternRef").inner_text.split("-")[0..4].join("-")
-        service_id = service_id.split("_")[1..-1].join("_")
 
-          {
-            line_id: services[service_id],
+      puts [jptl,jc].inspect
 
-            journey_pattern_id: j.css("JourneyPatternRef").inner_text.split("_")[1..-1].join("_"),
-            departure_time: j.css("DepartureTime").inner_text,
-            days_of_week: days_of_week
-          }
-      end
-      Journey.insert_all(journeys)
-
-      
     end
   end
 
