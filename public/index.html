@@ -60,8 +60,10 @@
             document.getElementById("loading").style.display = "none"
             let cDate = Date.now()
             stopData.buses.forEach(d => {
+              let projectedArrival = new Date(d.expected_arrival)
+              let projected_tts = Math.floor((projectedArrival - cDate)/1000)
 
-              if (map) {
+              if (map && projected_tts > -60) {
                 if (popups[d.vehicle_id]) {
                   popups[d.vehicle_id].setLatLng([d.vehicle_loc[0] ,d.vehicle_loc[1]])
                 } else {
@@ -77,8 +79,7 @@
               let time = document.createElement("tr")
               
               
-              let projectedArrival = new Date(d.expected_arrival)
-              let projected_tts = Math.floor((projectedArrival - cDate)/1000)
+           
               if (projected_tts < 0) {
                 time.classList.add("greyed")
               }
