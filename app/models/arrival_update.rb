@@ -3,28 +3,7 @@ require 'time'
 require 'open-uri'
 
 class ArrivalUpdate < ApplicationRecord
-  def self.get_vehicle_journeys
-    conn = ActiveRecord::Base.connection
-    rc = conn.raw_connection
-    match_query = "
-    insert into vehicle_journeys (line_name, vehicle_journey_code, journey_pattern_ref, days_of_week, departure_time, created_at, updated_at) 
-
-    select line_name, vehicle_journey_code, journey_pattern_ref, split_part(SUBSTRING(days_of_week::text, 2, length(days_of_week::text)),' xml',1) as days_of_week,TO_TIMESTAMP(departure_time::text, 'HH24:MI:SS'), NOW(), NOW() from
-    (select
-    line_name, unnest((xpath(\'//t:JourneyPatternRef/text()\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as journey_pattern_ref,
-    unnest((xpath(\'//t:RegularDayType/t:DaysOfWeek/*\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as days_of_week,
-    unnest((xpath(\'//t:DepartureTime/text()\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as departure_time
-    unnest((xpath(\'//t:VehicleJourneyCode/*\', vehicle_journey, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))) as vehicle_journey_code,
-    from
-    (select line_name, unnest(xpath(\'//t:VehicleJourney\', timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))  as vehicle_journey
-    from
-    (select timetable, unnest(xpath(\'//t:LineName/text()\' , timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as line_name
-    from 
-    (select unnest(xpath(\'//t:TransXChange\' , doc, array[array[\'t\',\'http://www.transxchange.org.uk/\']]) ) as timetable   from xmltemp) as timetables) as timetables2) as journeydata) as final_data on conflict (vehicle_journey_code) do nothing"
-
-    result = rc.exec(match_query)
-    puts result.inspect
-  end
+  
 
   def self.runquery
     puts "dot"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_22_103049) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_22_114231) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -124,6 +124,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_22_103049) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "vehicle_journey_code"
+    t.bigint "journey_pattern_id"
+    t.index ["journey_pattern_id"], name: "index_vehicle_journeys_on_journey_pattern_id"
     t.index ["vehicle_journey_code"], name: "index_vehicle_journeys_on_vehicle_journey_code", unique: true
   end
 
@@ -133,4 +135,5 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_22_103049) do
 
   add_foreign_key "journey_pattern_section_maps", "journey_pattern_sections"
   add_foreign_key "journey_pattern_section_maps", "journey_patterns"
+  add_foreign_key "vehicle_journeys", "journey_patterns"
 end
