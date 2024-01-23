@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  journey_pattern_section_ref: MyText
+  journey_pattern_id: MyText
+
+two:
+  journey_pattern_section_ref: MyText
+  journey_pattern_id: MyText
