@@ -75,6 +75,10 @@
                 }
                 
                 
+              } else {
+                if (popups[d.vehicle_id]) {
+                  popups[d.vehicle_id].remove()
+                }
               }
               let time = document.createElement("tr")
               
