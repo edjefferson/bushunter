@@ -1,6 +1,26 @@
 require 'open-uri'
 class Vehicle < ApplicationRecord
 
+
+  def self.check_locations
+    last_time = Time.now - 90
+    continue = true
+    while continue
+      begin
+        if (Time.now - last_time) > 10
+          logger.info "#{"checking locations"}"
+          puts "#{"checking locations"}"
+          last_time = Time.now
+          self.pull_data
+        end
+      rescue => e
+        continue = false
+        logger.info "#{e}"
+        puts "#{e}"
+      end
+    end
+  end
+
   def self.pull_data
     url = "https://data.bus-data.dft.gov.uk/api/v1/datafeed/?operatorRef=TFLO&api_key=#{ENV["DFT_API_KEY"]}"
     data = URI.open(url)

@@ -6,6 +6,11 @@ namespace :check do
    
     ArrivalUpdate.fetch_updates
   end
+
+  task :locations => :environment do |t, args|
+   
+    Vehicle.check_locations
+  end
 end
 
 
