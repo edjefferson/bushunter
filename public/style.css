@@ -72,3 +72,7 @@ body {
 
 .vid {
 }
+
+#times > tr > td:nth-of-type(3) > .distance {
+  font-size: 0.5em;
+}

@@ -297,10 +297,12 @@ class ArrivalUpdate < ApplicationRecord
         end
 
         if (Time.now - last_full_check) > 60
+          Vehicle.pull_data
           last_time = Time.now
           last_full_check = Time.now
           self.pull_json(-1)
         elsif (Time.now - last_time) > 10
+          Vehicle.pull_data
           last_time = Time.now
           self.pull_json(5)
         end

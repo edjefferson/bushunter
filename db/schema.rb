@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_22_114231) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_23_173416) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -116,17 +116,41 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_22_114231) do
     t.json "j"
   end
 
+  create_table "vehicle_journey_days", force: :cascade do |t|
+    t.bigint "vehicle_journey_id"
+    t.text "vehicle_journey_code"
+    t.text "day_of_week"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["vehicle_journey_id"], name: "index_vehicle_journey_days_on_vehicle_journey_id"
+  end
+
   create_table "vehicle_journeys", force: :cascade do |t|
     t.text "line_name"
     t.text "journey_pattern_ref"
-    t.text "days_of_week"
     t.time "departure_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "vehicle_journey_code"
     t.bigint "journey_pattern_id"
+    t.text "bh_days_operating", array: true
+    t.text "bh_days_not_operating", array: true
+    t.text "special_days_starts", array: true
+    t.text "special_days_ends", array: true
+    t.text "days_of_week", array: true
     t.index ["journey_pattern_id"], name: "index_vehicle_journeys_on_journey_pattern_id"
     t.index ["vehicle_journey_code"], name: "index_vehicle_journeys_on_vehicle_journey_code", unique: true
+  end
+
+  create_table "vehicles", force: :cascade do |t|
+    t.text "line_name"
+    t.text "vehicle_ref"
+    t.float "latitude"
+    t.float "longitude"
+    t.float "bearing"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["vehicle_ref"], name: "index_vehicles_on_vehicle_ref", unique: true
   end
 
   create_table "xmltemp", id: false, force: :cascade do |t|
@@ -135,5 +159,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_22_114231) do
 
   add_foreign_key "journey_pattern_section_maps", "journey_pattern_sections"
   add_foreign_key "journey_pattern_section_maps", "journey_patterns"
+  add_foreign_key "vehicle_journey_days", "vehicle_journeys"
   add_foreign_key "vehicle_journeys", "journey_patterns"
 end

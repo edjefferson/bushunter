@@ -27,13 +27,22 @@ class BusUpdatesController < ApplicationController
       if (last_update)
         stop_name = last_update.stop_name
         stop_letter = last_update.platform_name
+        vehicle_record = Vehicle.find_by(vehicle_ref:last_update.vehicle_id)
+        stop_record = StopPoint.find_by(stop_id: params[:stop_id])
+
+        if vehicle_record && stop_record
+          vehicle_distance = Geocoder::Calculations.distance_between([vehicle_record.latitude,vehicle_record.longitude], [stop_record.lat,stop_record.lng])
+        else
+          vehicle_distance = nil
+        end
         {
           line_name: last_update.line_name,
           timestamp: last_update.timestamp,
           expected_arrival: last_update.expected_arrival,
           projected_tts: (last_update.expected_arrival - Time.now),
           vehicle_id: last_update.vehicle_id,
-          destination_name: last_update.destination_name
+          destination_name: last_update.destination_name,
+          vehicle_distance: vehicle_distance
         }
       end
       }

@@ -69,9 +69,16 @@
                 info.appendChild(vid)
                 time.appendChild(info)
 
-                let countdown = document.createElement("td")
+                let countdownblock = document.createElement("td")
+                let countdown = document.createElement("div")
                 countdown.innerHTML = timeString
-                time.appendChild(countdown)
+                countdownblock.appendChild(countdown)
+
+                let distance = document.createElement("div")
+                distance.innerHTML = Math.round(d.vehicle_distance*10)/10 + " miles"
+                distance.classList.add("distance")
+                countdownblock.appendChild(distance)
+                time.appendChild(countdownblock)
 
                 let lastSeen = document.createElement("td")
                 let lastSeenDesc = document.createElement("div")

@@ -15,12 +15,15 @@ class JourneyPatternTimingLink < ApplicationRecord
     (xpath(\'//@id\' , jptl, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))[1]::text as journey_pattern_timing_link_ref,
 
     jps.id as journey_pattern_section_id, NOW(),NOW() from
-    (select journey_pattern_section_ref, unnest(xpath(\'//t:JourneyPatternTimingLink\' , jps, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as jptl
-    from (select line_name, unnest(xpath(\'//t:JourneyPatternSection\', tt, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))  as jps,
-    unnest(xpath(\'//t:JourneyPatternSection/@id\' , tt, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as journey_pattern_section_ref
-    from (select timetable as tt, unnest(xpath(\'//t:LineName/text()\' , timetable, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as line_name
-    from (select unnest(xpath(\'//t:TransXChange\' , doc, array[array[\'t\',\'http://www.transxchange.org.uk/\']]) ) as timetable   from xmltemp ) as timetables) as timetables2) as jpslist) as final_data 
-    join journey_pattern_sections jps on final_data.journey_pattern_section_ref::text = jps.journey_pattern_section_ref
+    (
+      select (xpath(\'//@id\' , tt, array[array[\'t\',\'http://www.transxchange.org.uk/\']]))[1]:text as journey_pattern_section_ref,
+    unnest(xpath(\'//t:JourneyPatternTimingLink\' , jps, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as jptl
+    from
+    (select
+      unnest(xpath(\'//t:JourneyPatternSection\', doc, array[array[\'t\',\'http://www.transxchange.org.uk/\']])) as jps from xmltemp
+      ) as journey_pattern_sections
+      ) as journey_pattern_timing_links
+     join journey_pattern_sections jps on journey_pattern_timing_links.journey_pattern_section_ref = jps.journey_pattern_section_ref
     ON CONFLICT (journey_pattern_timing_link_ref) DO NOTHING
     "
     
