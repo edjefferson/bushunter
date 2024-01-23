@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  line_name: MyText
+  vehicle_ref: MyText
+  latitude: 1.5
+  longitude: 1.5
+  bearing: 1.5
+
+two:
+  line_name: MyText
+  vehicle_ref: MyText
+  latitude: 1.5
+  longitude: 1.5
+  bearing: 1.5
