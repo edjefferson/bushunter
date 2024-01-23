@@ -39,6 +39,8 @@ class BusUpdatesController < ApplicationController
         {
           
           vehicle_loc: [vehicle_record.latitude,vehicle_record.longitude],
+          bearing: vehicle_record.bearing,
+          loc_update_time: vehicle_record.recorded_at,
           line_name: last_update.line_name,
           timestamp: last_update.timestamp,
           expected_arrival: last_update.expected_arrival,

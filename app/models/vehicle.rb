@@ -31,7 +31,8 @@ class Vehicle < ApplicationRecord
         vehicle_ref: v.css("VehicleRef").inner_text.strip,
         latitude: v.css("VehicleLocation > Latitude").inner_text.strip,
         longitude: v.css("VehicleLocation > Longitude").inner_text.strip,
-        bearing: v.css("Bearing").inner_text.strip
+        bearing: v.css("Bearing").inner_text.strip,
+        recorded_at: v.css("RecordedAtTime").inner_text.strip
       }
     }
     self.upsert_all(update, unique_by: :vehicle_ref)

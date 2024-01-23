@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_23_173416) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_23_211339) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -150,6 +150,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_23_173416) do
     t.float "bearing"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "recorded_at", precision: nil
     t.index ["vehicle_ref"], name: "index_vehicles_on_vehicle_ref", unique: true
   end
 
