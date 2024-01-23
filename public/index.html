@@ -2,22 +2,32 @@
   <head>
     <title>Bus Hunter</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+
     <link rel="stylesheet" href="style.css">
+ 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""></script>
   </head>
   <body>
     <div id="stop_name">Bus Hunter</div>
     <div id="loading">Loading...</div>
+    <div id="mapdiv"></div>
+  
     <table id="times"></table>
+    <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
     <script>
       const queryString = window.location.search;
       const searchParams = new URLSearchParams(queryString);
       let stop_id = searchParams.get("stop_id")
-
+      let map
       if (stop_id) {
         let timeDiff
         let stopData
-
-        
+        let maploaded = false
+        let popups = {}
 
         const updateData = () => {
           fetch(`live_update.json?stop_id=${stop_id}`).then(response => response.json()).then(data => {
@@ -25,6 +35,18 @@
             stopData = data
             setTimeout(updateData,5000)
 
+            if (!maploaded) {
+              maploaded = true
+              map = L.map('mapdiv').setView([stopData.stop_loc[0] ,stopData.stop_loc[1]], 13);
+              L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            
+              
+
+            }
 
           }).catch(error => {
             console.log(error)
@@ -38,6 +60,20 @@
             document.getElementById("loading").style.display = "none"
             let cDate = Date.now()
             stopData.buses.forEach(d => {
+
+              if (map) {
+                if (popups[d.vehicle_id]) {
+                  popups[d.vehicle_id].setLatLng([d.vehicle_loc[0] ,d.vehicle_loc[1]])
+                } else {
+                  let popup = L.popup({autoPan: false, closeButton: false})
+                  .setLatLng([d.vehicle_loc[0] ,d.vehicle_loc[1]])
+                  .setContent(d.line_name + " " +  d.vehicle_id)
+                  .addTo(map)
+                  popups[d.vehicle_id] = popup
+                }
+                
+                
+              }
               let time = document.createElement("tr")
               
               

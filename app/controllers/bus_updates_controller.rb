@@ -16,6 +16,7 @@ class BusUpdatesController < ApplicationController
   def live_update
     stop_name = ""
     stop_letter = ""
+    stop_loc = []
     @updates = ArrivalUpdate.where(stop_id: params[:stop_id], timestamp: (Time.now-30.minutes)..).order(timestamp: :desc)
     puts @updates[0].inspect
     @vehicles = @updates.map{|u|  u.vehicle_id}
@@ -29,13 +30,15 @@ class BusUpdatesController < ApplicationController
         stop_letter = last_update.platform_name
         vehicle_record = Vehicle.find_by(vehicle_ref:last_update.vehicle_id)
         stop_record = StopPoint.find_by(stop_id: params[:stop_id])
-
+        stop_loc = [stop_record.lat,stop_record.lng]
         if vehicle_record && stop_record
           vehicle_distance = Geocoder::Calculations.distance_between([vehicle_record.latitude,vehicle_record.longitude], [stop_record.lat,stop_record.lng])
         else
           vehicle_distance = nil
         end
         {
+          
+          vehicle_loc: [vehicle_record.latitude,vehicle_record.longitude],
           line_name: last_update.line_name,
           timestamp: last_update.timestamp,
           expected_arrival: last_update.expected_arrival,
@@ -49,6 +52,7 @@ class BusUpdatesController < ApplicationController
       
     
     render :json => {
+      stop_loc: stop_loc,
       time_now: Time.now.to_i,
       stop_name: stop_name,
       stop_letter: stop_letter,

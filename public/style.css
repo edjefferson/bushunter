@@ -76,3 +76,11 @@ body {
 #times > tr > td:nth-of-type(3) > .distance {
   font-size: 0.5em;
 }
+
+#mapdiv {
+  height: 50%;
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  opacity: 0.8;
+}
