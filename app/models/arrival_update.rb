@@ -78,8 +78,8 @@ class ArrivalUpdate < ApplicationRecord
   end
   def self.load_timetable
 
-    url = "http://localhost:3000/journey-planner-timetables.zip"
-    #url = "https://tfl.gov.uk/tfl/syndication/feeds/journey-planner-timetables.zip"
+    #url = "http://localhost:3000/journey-planner-timetables.zip"
+    url = "https://tfl.gov.uk/tfl/syndication/feeds/journey-planner-timetables.zip"
     hash = {}
     zip_data = []
     unzip_data = {}
