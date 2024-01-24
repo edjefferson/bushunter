@@ -17,6 +17,7 @@ class Vehicle < ApplicationRecord
         continue = false
         logger.info "#{e}"
         puts "#{e}"
+        sleep 10
       end
     end
   end
