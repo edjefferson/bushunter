@@ -310,7 +310,7 @@ class ArrivalUpdate < ApplicationRecord
           self.pull_json(5)
         end
       rescue => e
-        continue = false
+        sleep 10
         logger.info "#{e}"
         puts "#{e}"
       end

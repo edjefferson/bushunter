@@ -14,7 +14,6 @@ class Vehicle < ApplicationRecord
           self.pull_data
         end
       rescue => e
-        continue = false
         logger.info "#{e}"
         puts "#{e}"
         sleep 10
