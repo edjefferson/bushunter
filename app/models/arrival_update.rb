@@ -299,9 +299,14 @@ class ArrivalUpdate < ApplicationRecord
         if (Time.now - last_full_check) > 60
           last_time = Time.now
           last_full_check = Time.now
+          logger.info "#{"checking arrival updates"}"
+          puts "#{"checking arrival updates"}"
           self.pull_json(-1)
+          
         elsif (Time.now - last_time) > 10
           last_time = Time.now
+          logger.info "#{"checking arrival updates"}"
+          puts "#{"checking arrival updates"}"
           self.pull_json(5)
         end
       rescue => e
