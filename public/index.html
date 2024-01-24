@@ -37,6 +37,7 @@
 
             if (!maploaded) {
               maploaded = true
+              document.getElementById('mapdiv').style.height = "50%"
               map = L.map('mapdiv').setView([stopData.stop_loc[0] ,stopData.stop_loc[1]], 13);
               L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -59,27 +60,21 @@
             document.getElementById("times").innerHTML = ""
             document.getElementById("loading").style.display = "none"
             let cDate = Date.now()
-            stopData.buses.forEach(d => {
+            Object.keys(popups).forEach(p => popups[p].remove())
+            stopData.buses.forEach((d,i) => {
               let projectedArrival = new Date(d.expected_arrival)
               let projected_tts = Math.floor((projectedArrival - cDate)/1000)
 
               if (map && projected_tts > -60) {
-                if (popups[d.vehicle_id]) {
-                  popups[d.vehicle_id].setLatLng([d.vehicle_loc[0] ,d.vehicle_loc[1]])
-                } else {
-                  let popup = L.popup({autoPan: false, closeButton: false})
-                  .setLatLng([d.vehicle_loc[0] ,d.vehicle_loc[1]])
-                  .setContent(d.line_name + " " +  d.vehicle_id)
-                  .addTo(map)
-                  popups[d.vehicle_id] = popup
-                }
+                
+                let busIcon = L.divIcon({className: 'busNOMap', html: `<div class="numcircle"><span>${i+1}</span><div>`});
+                let popup = L.marker([d.vehicle_loc[0] ,d.vehicle_loc[1]], {icon: busIcon}).addTo(map);
+                popups[d.vehicle_id] = popup
                 
                 
-              } else {
-                if (popups[d.vehicle_id]) {
-                  popups[d.vehicle_id].remove()
-                }
-              }
+                
+              } 
+              
               let time = document.createElement("tr")
               
               
@@ -95,9 +90,22 @@
                 } else {
                   timeString = "-" + String(Math.floor(-projected_tts/60)).padStart(2, '0') + ":" + String(Math.ceil(-projected_tts % 60)).padStart(2, '0') 
                 }
-                let lineNo = document.createElement("td")
+
+                let lineNoCell = document.createElement("td")
+                let lineNoBlock = document.createElement("div")
+
+                let mapid = document.createElement("div")
+                mapid.innerHTML = `<span>${i+1}</span>`
+                mapid.classList.add("numcircle")
+
+                let lineNo = document.createElement("div")
                 lineNo.innerHTML = d.line_name
-                time.appendChild(lineNo)
+                lineNoBlock.appendChild(mapid)
+
+                lineNoBlock.appendChild(lineNo)
+                lineNoCell.appendChild(lineNoBlock)
+                time.appendChild(lineNoCell)
+
 
                 let info = document.createElement("td")
 
@@ -115,10 +123,7 @@
                 countdown.innerHTML = timeString
                 countdownblock.appendChild(countdown)
 
-                let distance = document.createElement("div")
-                distance.innerHTML = Math.round(d.vehicle_distance*10)/10 + " miles"
-                distance.classList.add("distance")
-                countdownblock.appendChild(distance)
+          
                 time.appendChild(countdownblock)
 
                 let lastSeen = document.createElement("td")
