@@ -68,3 +68,6 @@ end
 gem 'rubyzip', require: 'zip'
 gem 'geocoder'
 gem 'iso8601'
+gem 'rgeo'
+gem 'ffi'
+gem 'ffi-geos', github: 'dark-panda/ffi-geos', branch: 'homebrew'

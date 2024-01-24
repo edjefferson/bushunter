@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/dark-panda/ffi-geos.git
+  revision: 4219b6dfc17f2431f0337880d8ae89503f43c2aa
+  branch: homebrew
+  specs:
+    ffi-geos (2.3.0)
+      ffi (>= 1.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -102,6 +110,7 @@ GEM
     drb (2.2.0)
       ruby2_keywords
     erubi (1.12.0)
+    ffi (1.16.3)
     geocoder (1.8.2)
     globalid (1.2.1)
       activesupport (>= 6.1)
@@ -130,6 +139,7 @@ GEM
     marcel (1.0.2)
     matrix (0.4.2)
     mini_mime (1.1.5)
+    mini_portile2 (2.8.5)
     minitest (5.21.2)
     msgpack (1.7.2)
     mutex_m (0.2.0)
@@ -143,17 +153,8 @@ GEM
     net-smtp (0.4.0.1)
       net-protocol
     nio4r (2.7.0)
-    nokogiri (1.16.0-aarch64-linux)
-      racc (~> 1.4)
-    nokogiri (1.16.0-arm-linux)
-      racc (~> 1.4)
-    nokogiri (1.16.0-arm64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.16.0-x86-linux)
-      racc (~> 1.4)
-    nokogiri (1.16.0-x86_64-darwin)
-      racc (~> 1.4)
-    nokogiri (1.16.0-x86_64-linux)
+    nokogiri (1.16.0)
+      mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     pg (1.5.4)
     psych (5.1.2)
@@ -210,9 +211,11 @@ GEM
     reline (0.4.2)
       io-console (~> 0.5)
     rexml (3.2.6)
+    rgeo (3.0.1)
     ruby2_keywords (0.0.5)
     rubyzip (2.3.2)
-    selenium-webdriver (4.16.0)
+    selenium-webdriver (4.17.0)
+      base64 (~> 0.2)
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
@@ -249,17 +252,14 @@ GEM
     zeitwerk (2.6.12)
 
 PLATFORMS
-  aarch64-linux
-  arm-linux
-  arm64-darwin
-  x86-linux
-  x86_64-darwin
-  x86_64-linux
+  ruby
 
 DEPENDENCIES
   bootsnap
   capybara
   debug
+  ffi
+  ffi-geos!
   geocoder
   importmap-rails
   iso8601
@@ -268,6 +268,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 7.1.2)
   redis (>= 4.0.1)
+  rgeo
   rubyzip
   selenium-webdriver
   sprockets-rails

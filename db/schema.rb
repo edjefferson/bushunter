@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_23_211339) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_24_134928) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -97,6 +97,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_23_211339) do
 
   create_table "jsontemps", force: :cascade do |t|
     t.json "doc"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "routes", force: :cascade do |t|
+    t.text "line_name"
+    t.text "direction"
+    t.text "linestrings"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
