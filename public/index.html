@@ -61,13 +61,14 @@
             document.getElementById("loading").style.display = "none"
             let cDate = Date.now()
             Object.keys(popups).forEach(p => popups[p].remove())
+            let busIconNumber = 0
             stopData.buses.forEach((d,i) => {
               let projectedArrival = new Date(d.expected_arrival)
               let projected_tts = Math.floor((projectedArrival - cDate)/1000)
-
+              
               if (map && projected_tts > -60) {
-                
-                let busIcon = L.divIcon({iconAnchor: [20,20], iconSize: [40,40], className: 'busNoMap', html: `<div class="numcircle"><span>${i+1}</span></div><div style="transform: rotate(${d.bearing}deg)" class="pointer"><div></div></div>`});
+                busIconNumber += 1
+                let busIcon = L.divIcon({iconAnchor: [20,20], iconSize: [40,40], className: 'busNoMap', html: `<div class="numcircle"><span>${busIconNumber}</span></div><div style="transform: rotate(${d.bearing}deg)" class="pointer"><div></div></div>`});
                 let popup = L.marker([d.vehicle_loc[0] ,d.vehicle_loc[1]], {icon: busIcon}).addTo(map);
                 popups[d.vehicle_id] = popup
                 
@@ -95,7 +96,7 @@
                 let lineNoBlock = document.createElement("div")
 
                 let mapid = document.createElement("div")
-                mapid.innerHTML = `<span>${i+1}</span>`
+                mapid.innerHTML = `<span>${busIconNumber}</span>`
                 mapid.classList.add("numcircle")
 
                 let lineNo = document.createElement("div")

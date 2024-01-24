@@ -105,6 +105,7 @@ body {
 .numcircle span {
   color: white;
   display: inline-block;
+  z-index: 5;
 
 }
 
@@ -132,11 +133,13 @@ body {
 .pointer > div {
   width: 0; 
   height: 0; 
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  margin-top: -12px;
   border-bottom: 10px solid red;
+  z-index: 2;
 }
+
 @media only screen and (min-width: 600px) {
   .numcircle {
     font-size: 1em;
@@ -148,5 +151,16 @@ body {
 }
 .busNoMap {
   font-size: 2em;
+}
+
+
+.pointer > div {
+  width: 0; 
+  height: 0; 
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  margin-top: -5px;
+
+  border-bottom: 10px solid red;
 }
 }
