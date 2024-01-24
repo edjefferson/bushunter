@@ -67,7 +67,7 @@
 
               if (map && projected_tts > -60) {
                 
-                let busIcon = L.divIcon({className: 'busNOMap', html: `<div class="numcircle"><span>${i+1}</span><div>`});
+                let busIcon = L.divIcon({iconAnchor: [20,20], iconSize: [40,40], className: 'busNoMap', html: `<div class="numcircle"><span>${i+1}</span></div><div style="transform: rotate(${d.bearing}deg)" class="pointer"><div></div></div>`});
                 let popup = L.marker([d.vehicle_loc[0] ,d.vehicle_loc[1]], {icon: busIcon}).addTo(map);
                 popups[d.vehicle_id] = popup
                 
@@ -142,7 +142,7 @@
             })
             
           } 
-          requestAnimationFrame(updateDisplay)
+          if (!stopData) requestAnimationFrame(updateDisplay)
         }
         requestAnimationFrame(updateDisplay)
         updateData()
