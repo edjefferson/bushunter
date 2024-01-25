@@ -32,12 +32,10 @@ class Route < ApplicationRecord
   end
 
   def get_distance_between_two_points(start,finish)
-
     line_string_points = JSON.parse(self.linestrings)[0][0].map {|p| 
-    RGeo::Geographic.spherical_factory.point(p[0],p[1])
-      
+      RGeo::Geographic.spherical_factory.point(p[0],p[1])
     }
-    #polyline = factory.line_string(line_string_points)
+
 
 
     start_line_point = get_nearest_point_on_route(start)
@@ -47,12 +45,21 @@ class Route < ApplicationRecord
     nearest_to_start_point_index = nil
     line_string_points.each_with_index do |p,i|
       distance = p.distance(start_line_point)
-      puts i,distance
+      
       if distance < nearest_to_start_point_dist
-        nearest_to_start_point = start_line_point
+        nearest_to_start_point = p
         nearest_to_start_point_dist = distance
         nearest_to_start_point_index = i 
       end
+    end
+    bearing =  Geocoder::Calculations.bearing_between(start_line_point.coordinates.reverse,nearest_to_start_point.coordinates.reverse)
+    line_bearing = Geocoder::Calculations.bearing_between(nearest_to_start_point.coordinates.reverse,line_string_points[nearest_to_start_point_index+1].coordinates.reverse)
+    
+    distance = Geocoder::Calculations.distance_between(nearest_to_start_point.coordinates.reverse,start_line_point.coordinates.reverse)
+    if (bearing - line_bearing).abs < 1
+      total = - distance
+    else
+      total = distance
     end
 
     nearest_to_end_point = nil
@@ -61,23 +68,32 @@ class Route < ApplicationRecord
     line_string_points.reverse.each_with_index do |p,i|
       distance = p.distance(end_line_point)
       if distance < nearest_to_end_point_dist
-        nearest_to_end_point = end_line_point
+        nearest_to_end_point = p
         nearest_to_end_point_dist = distance
-        nearest_to_end_point_index = (line_string_points.count - i) 
+        nearest_to_end_point_index = (line_string_points.count - i - 1) 
       end
     end
-    puts nearest_to_start_point_index
-    puts nearest_to_end_point_index
 
-    puts nearest_to_end_point_index
-    total = nearest_to_start_point.distance(start_line_point)
-    line_string_points[nearest_to_start_point_index..nearest_to_end_point_index - 1].each_with_index do |l,i|
-      total += l.distance(line_string_points[i+1])
+   
+    bearing =  Geocoder::Calculations.bearing_between(nearest_to_end_point.coordinates.reverse,end_line_point.coordinates.reverse)
+    line_bearing = Geocoder::Calculations.bearing_between(line_string_points[nearest_to_end_point_index-1].coordinates.reverse,nearest_to_end_point.coordinates.reverse)
+    distance = Geocoder::Calculations.distance_between(nearest_to_end_point.coordinates.reverse,end_line_point.coordinates.reverse)
+
+    
+    if (bearing - line_bearing).abs < 1
+      total += distance
+    else
+      total -= distance
     end
-    puts nearest_to_start_point.distance(start_line_point)
-    puts nearest_to_end_point.distance(end_line_point)
-    total += nearest_to_end_point.distance(end_line_point)
-    puts total
-
+    subsection = line_string_points[nearest_to_start_point_index..nearest_to_end_point_index]
+    if nearest_to_start_point_index != nearest_to_end_point_index
+      subsection.each_with_index do |l,i|
+        if i < subsection.length - 1
+          total += Geocoder::Calculations.distance_between(l.coordinates.reverse,subsection[i+1].coordinates.reverse)
+        end
+      end
+    end
+  
+    return total
   end
 end

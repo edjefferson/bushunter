@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_24_134928) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_25_120527) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -159,7 +159,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_24_134928) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "recorded_at", precision: nil
-    t.index ["vehicle_ref"], name: "index_vehicles_on_vehicle_ref", unique: true
+    t.index ["vehicle_ref", "recorded_at"], name: "index_vehicles_on_vehicle_ref_and_recorded_at", unique: true
   end
 
   create_table "xmltemp", id: false, force: :cascade do |t|

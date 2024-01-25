@@ -1,4 +1,6 @@
 require 'open-uri'
+
+
 class Vehicle < ApplicationRecord
 
 
@@ -35,6 +37,22 @@ class Vehicle < ApplicationRecord
         recorded_at: v.css("RecordedAtTime").inner_text.strip
       }
     }
-    self.upsert_all(update, unique_by: :vehicle_ref)
+    self.upsert_all(update, unique_by: [:vehicle_ref, :recorded_at])
+    conn = ActiveRecord::Base.connection
+    rc = conn.raw_connection
+   
+    delete_query = "delete from vehicles where id in (
+      SELECT
+          id
+      FROM
+          (
+              SELECT
+                  *,
+                  ROW_NUMBER() OVER (PARTITION BY v.vehicle_ref ORDER BY v.recorded_at desc) as rowcount
+              FROM
+                  vehicles v 
+          ) sub
+      WHERE sub.rowcount  > 5)"
+      rc.exec(delete_query)
   end
 end
