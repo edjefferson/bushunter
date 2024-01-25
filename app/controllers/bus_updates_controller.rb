@@ -28,19 +28,31 @@ class BusUpdatesController < ApplicationController
       if (last_update)
         stop_name = last_update.stop_name
         stop_letter = last_update.platform_name
-        vehicle_record = Vehicle.where(vehicle_ref:last_update.vehicle_id).order(recorded_at: :desc)[0]
+        vehicle_records = Vehicle.where(vehicle_ref:last_update.vehicle_id).order(recorded_at: :desc)
         stop_record = StopPoint.find_by(stop_id: params[:stop_id])
         stop_loc = [stop_record.lat,stop_record.lng]
-        if vehicle_record && stop_record
-          vehicle_distance = Geocoder::Calculations.distance_between([vehicle_record.latitude,vehicle_record.longitude], [stop_record.lat,stop_record.lng])
+        if vehicle_records[0] && stop_record
+          vehicle_distance = Geocoder::Calculations.distance_between([vehicle_records[0].latitude,vehicle_records[0].longitude], [stop_record.lat,stop_record.lng])
+          vehicle_speeds = []
+          route = Route.where(direction: last_update.direction, line_name: last_update.line_name)[0]
+       
+          vehicle_records.each_with_index do |vehicle_record,i|
+            if route && i < vehicle_records.length - 2
+              last_record = vehicle_records[i+1]
+              distance = route.get_distance_between_two_points([vehicle_record.latitude,vehicle_record.longitude],[last_record.latitude,last_record.longitude])
+              time = vehicle_record.recorded_at - last_record.recorded_at
+              vehicle_speeds << (distance/time).abs * 1.60934 * 1000
+            end
+          end
         else
           vehicle_distance = nil
+          vehicle_speeds = []
         end
         {
-          
-          vehicle_loc: [vehicle_record.latitude,vehicle_record.longitude],
-          bearing: vehicle_record.bearing,
-          loc_update_time: vehicle_record.recorded_at,
+          vehicle_speeds: vehicle_speeds,
+          vehicle_loc: [vehicle_records[0].latitude,vehicle_records[0].longitude],
+          bearing: vehicle_records[0].bearing,
+          loc_update_time: vehicle_records[0].recorded_at,
           line_name: last_update.line_name,
           timestamp: last_update.timestamp,
           expected_arrival: last_update.expected_arrival,

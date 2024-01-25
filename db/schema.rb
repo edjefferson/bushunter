@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_25_120527) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_25_134735) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -26,8 +26,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_25_120527) do
     t.datetime "expected_arrival", precision: nil
     t.text "platform_name"
     t.text "destination_name"
+    t.text "direction"
     t.index ["stop_id"], name: "index_arrival_updates_on_stop_id"
-    t.index ["vehicle_id", "stop_id", "stop_name", "line_name", "platform_name", "destination_name"], name: "idx_on_vehicle_id_stop_id_stop_name_line_name_platf_5bbe160744", unique: true
+    t.index ["vehicle_id", "stop_id", "stop_name", "line_name", "direction", "platform_name", "destination_name"], name: "idx_on_vehicle_id_stop_id_stop_name_line_name_direc_d856848404", unique: true
     t.unique_constraint ["stop_id", "stop_name", "vehicle_id", "line_name", "platform_name", "destination_name"], name: "constraintarr"
   end
 

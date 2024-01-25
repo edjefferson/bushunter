@@ -242,13 +242,13 @@ class ArrivalUpdate < ApplicationRecord
       end
     end
 
-    match_query = 'insert into arrival_updates (stop_id, stop_name, line_name, platform_name, destination_name, vehicle_id, expected_arrival, timestamp, created_at, updated_at)
-      select distinct q."naptanId", q."stationName", q."lineName", q."platformName", q."destinationName",q."vehicleId", max(q."expectedArrival"), max(q.timestamp) as mtimestamp , now() as created_at, now() as updated_at from
-      (select p."naptanId", p."stationName", p."lineName", p."platformName", p."destinationName", p."vehicleId",p."expectedArrival",cast(p.timestamp AS TIMESTAMP)
+    match_query = 'insert into arrival_updates (stop_id, stop_name, line_name, direction, platform_name, destination_name, vehicle_id, expected_arrival, timestamp, created_at, updated_at)
+      select distinct q."naptanId", q."stationName", q."lineName", q.direction, q."platformName", q."destinationName",q."vehicleId", max(q."expectedArrival"), max(q.timestamp) as mtimestamp , now() as created_at, now() as updated_at from
+      (select p."naptanId", p."stationName", p."lineName", p.direction , p."platformName", p."destinationName", p."vehicleId",p."expectedArrival",cast(p.timestamp AS TIMESTAMP)
       from jsontemp l
       cross join lateral json_populate_recordset(null::update_type, doc) as p) as q
-      group by q."naptanId", q."stationName", q."lineName", q."platformName", q."destinationName", q."vehicleId"
-      on conflict (stop_id, stop_name, line_name, platform_name, destination_name, vehicle_id) do update 
+      group by q."naptanId", q."stationName", q."lineName",q.direction, q."platformName", q."destinationName", q."vehicleId"
+      on conflict (stop_id, stop_name, line_name, direction, platform_name, destination_name, vehicle_id) do update 
       set expected_arrival = excluded.expected_arrival, 
       timestamp = excluded.timestamp,
       updated_at = excluded.updated_at

@@ -2,7 +2,7 @@ class AddType < ActiveRecord::Migration[7.1]
   def up
     execute <<~SQL
 
-      CREATE TYPE update_type as ("naptanId" text, "stationName" text, "lineName" text, "platformName" text, "destinationName" text, "vehicleId" text, "expectedArrival" timestamp, timestamp timestamp);
+      CREATE TYPE update_type as ("naptanId" text, "stationName" text, "lineName" text, "platformName" text, "direction" text, "destinationName" text, "vehicleId" text, "expectedArrival" timestamp, timestamp timestamp);
 
       
     SQL
