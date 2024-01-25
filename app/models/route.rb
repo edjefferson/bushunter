@@ -1,5 +1,13 @@
 require 'open-uri'
 require 'rgeo'
+
+class RouteCoords
+  attr_accessor :coordinates
+  def initalize params
+    @coordinates = []
+  end
+end
+
 class Route < ApplicationRecord
 
   def self.retrieve_data(line_name,direction)
@@ -34,9 +42,10 @@ class Route < ApplicationRecord
 
   def get_distance_between_two_points(start,finish)
     line_string_points = JSON.parse(self.linestrings)[0][0].map {|p| 
-      RGeo::Geographic.spherical_factory.point(p[0],p[1])
+      r = RouteCoords.new
+      r.coordinates = p
+      r
     }
-
 
 
     start_line_point = get_nearest_point_on_route(start)
@@ -45,16 +54,18 @@ class Route < ApplicationRecord
     nearest_to_start_point_dist = 9999999
     nearest_to_start_point_index = nil
     line_string_points.each_with_index do |p,i|
-      distance = p.distance(start_line_point)
-      
+
+      distance = Geocoder::Calculations.distance_between(p.coordinates.reverse,start_line_point.coordinates.reverse)
       if distance < nearest_to_start_point_dist
         nearest_to_start_point = p
         nearest_to_start_point_dist = distance
         nearest_to_start_point_index = i 
       end
     end
+
     bearing =  Geocoder::Calculations.bearing_between(start_line_point.coordinates.reverse,nearest_to_start_point.coordinates.reverse)
-    line_bearing = Geocoder::Calculations.bearing_between(nearest_to_start_point.coordinates.reverse,line_string_points[nearest_to_start_point_index+1].coordinates.reverse)
+
+    line_bearing = Geocoder::Calculations.bearing_between(nearest_to_start_point.coordinates.reverse,line_string_points[nearest_to_start_point_index].coordinates.reverse)
     
     distance = Geocoder::Calculations.distance_between(nearest_to_start_point.coordinates.reverse,start_line_point.coordinates.reverse)
     if (bearing - line_bearing).abs < 1
@@ -67,7 +78,9 @@ class Route < ApplicationRecord
     nearest_to_end_point_dist = 9999999
     nearest_to_end_point_index = nil
     line_string_points.reverse.each_with_index do |p,i|
-      distance = p.distance(end_line_point)
+
+      distance = Geocoder::Calculations.distance_between(p.coordinates.reverse,end_line_point.coordinates.reverse)
+
       if distance < nearest_to_end_point_dist
         nearest_to_end_point = p
         nearest_to_end_point_dist = distance
