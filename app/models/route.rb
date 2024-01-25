@@ -9,6 +9,7 @@ class Route < ApplicationRecord
     strings = data["lineStrings"].map {|l| JSON.parse(l)}
     route = self.where(line_name: line_name, direction: direction).first_or_create
     route.update(linestrings: strings.to_json)
+    route
   end
 
   def get_nearest_point_on_route(point)

@@ -35,7 +35,9 @@ class BusUpdatesController < ApplicationController
           vehicle_distance = Geocoder::Calculations.distance_between([vehicle_records[0].latitude,vehicle_records[0].longitude], [stop_record.lat,stop_record.lng])
           vehicle_speeds = []
           route = Route.where(direction: last_update.direction, line_name: last_update.line_name)[0]
-       
+          unless route
+            route = Route.retrieve_data(last_update.line_name,last_update.direction)
+          end
           vehicle_records.each_with_index do |vehicle_record,i|
             if route && i < vehicle_records.length - 2
               last_record = vehicle_records[i+1]
