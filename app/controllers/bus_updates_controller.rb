@@ -28,7 +28,7 @@ class BusUpdatesController < ApplicationController
       if (last_update)
         stop_name = last_update.stop_name
         stop_letter = last_update.platform_name
-        vehicle_record = Vehicle.find_by(vehicle_ref:last_update.vehicle_id)
+        vehicle_record = Vehicle.where(vehicle_ref:last_update.vehicle_id).order(recorded_at: :desc)[0]
         stop_record = StopPoint.find_by(stop_id: params[:stop_id])
         stop_loc = [stop_record.lat,stop_record.lng]
         if vehicle_record && stop_record
